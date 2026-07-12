@@ -19,7 +19,7 @@ fun Project.configureAndroid() {
             ndkVersion = mihonx.versions.android.ndk.get()
         }
 
-        compileSdk = mihonx.versions.android.sdk.compile.get().toInt()
+        compileSdkVersion(mihonx.versions.android.sdk.compile.get().toInt())
 
         compileOptions {
             isCoreLibraryDesugaringEnabled = true

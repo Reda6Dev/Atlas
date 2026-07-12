@@ -1,3 +1,5 @@
+import java.util.Locale
+
 plugins {
     alias(mihonx.plugins.android.library)
     alias(mihonx.plugins.spotless)
@@ -32,4 +34,12 @@ dependencies {
     implementation(projects.core.common)
 
     api(libs.bundles.sqldelight)
+}
+
+tasks.configureEach {
+    if (name.contains("sqldelight", ignoreCase = true)) {
+        doFirst {
+            Locale.setDefault(Locale.US)
+        }
+    }
 }
