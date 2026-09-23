@@ -28,7 +28,7 @@ android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
-        applicationId = "eu.kanade.tachiyomi.sy"
+        applicationId = "com.reda6dev.atlas"
 
         versionCode = 77
         versionName = "1.12.0"
