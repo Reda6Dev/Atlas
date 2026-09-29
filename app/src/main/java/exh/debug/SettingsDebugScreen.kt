@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
@@ -57,9 +58,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.plus
 import java.util.Locale
@@ -97,7 +101,7 @@ class SettingsDebugScreen : Screen() {
         Scaffold(
             topBar = { scrollBehavior ->
                 AppBar(
-                    title = "DEBUG MENU",
+                    title = stringResource(SYMR.strings.debug_menu_title),
                     scrollBehavior = scrollBehavior,
                 )
             },
@@ -118,6 +122,8 @@ class SettingsDebugScreen : Screen() {
         toggles: ImmutableList<DebugToggle>,
         scope: CoroutineScope,
     ) {
+        val context = LocalContext.current
+        val modifiedLabel = stringResource(SYMR.strings.debug_toggle_modified)
         Box(Modifier.fillMaxSize()) {
             var running by remember { mutableStateOf(false) }
             var result by remember { mutableStateOf<Pair<String, String>?>(null) }
@@ -129,7 +135,7 @@ class SettingsDebugScreen : Screen() {
             ) {
                 item {
                     Text(
-                        text = "Functions",
+                        text = stringResource(SYMR.strings.debug_functions_header),
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(16.dp),
@@ -142,9 +148,10 @@ class SettingsDebugScreen : Screen() {
                             scope.launch(Dispatchers.Default) {
                                 val text = try {
                                     running = true
-                                    "Function returned result:\n\n${func.call(DebugFunctions)}"
+                                    val res = func.call(DebugFunctions)
+                                    context.stringResource(SYMR.strings.debug_function_returned_result, res ?: "")
                                 } catch (e: Exception) {
-                                    "Function threw exception:\n\n${Log.getStackTraceString(e)}"
+                                    context.stringResource(SYMR.strings.debug_function_threw_exception, Log.getStackTraceString(e))
                                 } finally {
                                     running = false
                                 }
@@ -158,7 +165,7 @@ class SettingsDebugScreen : Screen() {
                 }
                 item {
                     Text(
-                        text = "Toggles",
+                        text = stringResource(SYMR.strings.debug_toggles_header),
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(16.dp),
@@ -171,7 +178,7 @@ class SettingsDebugScreen : Screen() {
                             .lowercase(Locale.getDefault())
                             .capitalize(Locale.getDefault()),
                         subtitle = if (pref.value != default) {
-                            AnnotatedString("MODIFIED", SpanStyle(color = Color.Red))
+                            AnnotatedString(modifiedLabel, SpanStyle(color = Color.Red))
                         } else {
                             null
                         },

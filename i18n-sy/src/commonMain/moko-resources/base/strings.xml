@@ -130,6 +130,12 @@
     <string name="open_debug_menu_summary">
         <![CDATA[DO NOT TOUCH THIS MENU UNLESS YOU KNOW WHAT YOU ARE DOING! <font color=\'red\'>IT CAN CORRUPT YOUR LIBRARY!</font>]]>
     </string>
+    <string name="debug_menu_title">DEBUG MENU</string>
+    <string name="debug_functions_header">Functions</string>
+    <string name="debug_toggles_header">Toggles</string>
+    <string name="debug_function_returned_result">Function returned result:\n\n%1$s</string>
+    <string name="debug_function_threw_exception">Function threw exception:\n\n%1$s</string>
+    <string name="debug_toggle_modified">MODIFIED</string>
     <string name="starting_cleanup">Starting cleanup</string>
     <string name="clean_up_downloaded_chapters">Clean up downloaded chapters</string>
     <string name="delete_unused_chapters">Delete non-existent, partially downloaded, and read chapter folders</string>
@@ -460,7 +466,7 @@
 
     <!-- Extension section -->
     <string name="ext_redundant">Redundant</string>
-    <string name="redundant_extension_message">This extension is redundant and will not be used inside this version of Tachiyomi.</string>
+    <string name="redundant_extension_message">This extension is redundant and will not be used inside this version of Atlas.</string>
 
     <!-- Migration -->
     <string name="select_sources">Select sources</string>
@@ -669,6 +675,10 @@
     <string name="manga_updates_id">Manga updates id</string>
     <string name="anime_planet_id">Anime planet id</string>
     <string name="translated">Translated</string>
+    <string name="original">Original</string>
+    <string name="rewrite">Rewrite</string>
+    <string name="category_header">Category</string>
+    <string name="enabled_header">Enabled</string>
     <string name="filename">File name</string>
     <string name="file_extension">File extension</string>
     <string name="base_url">Base url</string>

@@ -34,6 +34,7 @@ internal class ExtensionApi {
     private val getExtensionRepo: GetExtensionRepo by injectLazy()
     private val updateExtensionRepo: UpdateExtensionRepo by injectLazy()
     private val extensionManager: ExtensionManager by injectLazy()
+    private val extensionRepoService: mihon.domain.extensionrepo.service.ExtensionRepoService by injectLazy()
 
     // SY -->
     private val sourcePreferences: SourcePreferences by injectLazy()
@@ -57,18 +58,50 @@ internal class ExtensionApi {
     private suspend fun getExtensions(extRepo: ExtensionRepo): List<Extension.Available> {
         val repoBaseUrl = extRepo.baseUrl
         return try {
-            val response = networkService.client
-                .newCall(GET("$repoBaseUrl/index.min.json"))
-                .awaitSuccess()
+            if (repoBaseUrl.endsWith(".pb")) {
+                getStoreExtensions(repoBaseUrl)
+            } else {
+                val response = networkService.client
+                    .newCall(GET("$repoBaseUrl/index.min.json"))
+                    .awaitSuccess()
 
-            with(json) {
-                response
-                    .parseAs<List<ExtensionJsonObject>>()
-                    .toExtensions(repoBaseUrl)
+                with(json) {
+                    response
+                        .parseAs<List<ExtensionJsonObject>>()
+                        .toExtensions(repoBaseUrl)
+                }
             }
         } catch (e: Throwable) {
             logcat(LogPriority.ERROR, e) { "Failed to get extensions from $repoBaseUrl" }
             emptyList()
+        }
+    }
+
+    private suspend fun getStoreExtensions(indexUrl: String): List<Extension.Available> {
+        val store = extensionRepoService.fetchStore(indexUrl)
+        val list = store.extensionListUrl?.let { extensionRepoService.fetchExtensionList(it) }
+            ?: store.extensionList
+            ?: return emptyList()
+        return list.extensions.mapNotNull { ext ->
+            val lib = ext.extensionLib.toDoubleOrNull() ?: return@mapNotNull null
+            if (lib < ExtensionLoader.LIB_VERSION_MIN || lib > ExtensionLoader.LIB_VERSION_MAX) return@mapNotNull null
+            val langs = ext.sources.map { it.language }.toSet()
+            Extension.Available(
+                name = ext.name.substringAfter("Tachiyomi: "),
+                pkgName = ext.packageName,
+                versionName = ext.versionName,
+                versionCode = ext.versionCode,
+                libVersion = lib,
+                lang = if (langs.size == 1) langs.first() else "all",
+                isNsfw = ext.contentWarning >= mihon.domain.extensionrepo.service.ExtensionStoreDto.ContentWarning.MIXED,
+                sources = ext.sources.map {
+                    Extension.Available.Source(id = it.id, lang = it.language, name = it.name, baseUrl = it.homeUrl)
+                },
+                apkName = "",
+                iconUrl = ext.resources.iconUrl,
+                repoUrl = indexUrl,
+                apkUrl = ext.resources.apkUrl,
+            )
         }
     }
 
@@ -146,7 +179,7 @@ internal class ExtensionApi {
     }
 
     fun getApkUrl(extension: Extension.Available): String {
-        return "${extension.repoUrl}/apk/${extension.apkName}"
+        return extension.apkUrl ?: "${extension.repoUrl}/apk/${extension.apkName}"
     }
 
     private fun ExtensionJsonObject.extractLibVersion(): Double {

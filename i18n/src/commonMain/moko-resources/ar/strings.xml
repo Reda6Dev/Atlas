@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Atlas</string>
     <string name="name">الاسم</string>
     <string name="categories">الفئات</string>
     <string name="manga">إدخالات المكتبة</string>
@@ -44,6 +45,7 @@
     <string name="action_remove">إزالة</string>
     <string name="action_resume">استئناف</string>
     <string name="action_open_in_browser">فتح فى المتصفح</string>
+    <string name="action_web_view">عرض الويب</string>
     <string name="action_display_mode">وضع العرض</string>
     <string name="action_display">العرض</string>
     <string name="action_display_grid">شبكة مدمجة</string>
@@ -181,6 +183,8 @@
     <string name="sort_by_number">حسب رقم الفصل</string>
     <string name="manga_download">تنزيل</string>
     <string name="download_unread">غير مقروء</string>
+    <string name="download_bookmarked">المحفوظة بمرجعية</string>
+    <string name="action_filter_excluded_scanlators">تصفية الفرق المستبعدة</string>
     <string name="confirm_delete_chapters">هل أنت متأكد من أنك تريد حذف الفصول المحددة؟</string>
     <string name="manga_tracking_tab">التتبع</string>
     <string name="reading">القراءة</string>
@@ -550,6 +554,9 @@
     <string name="privacy_policy">سياسة الخصوصية</string>
     <string name="pref_update_only_completely_read">فيها فصول لم تُقرأ</string>
     <string name="ext_installer_legacy">قياسي</string>
+    <string name="ext_installer_packageinstaller">مثبت الحزم</string>
+    <string name="ext_installer_shizuku">Shizuku</string>
+    <string name="ext_installer_private">خاص</string>
     <string name="pref_auto_clear_chapter_cache">امسح ملفات التخزين المؤقت عند فتح التطبيق</string>
     <string name="database_clean">لا شئ للتنظيف</string>
     <string name="clear_database_source_item_count">%1$d مدخلةً في قاعدة البيانات وليست في المكتبة</string>

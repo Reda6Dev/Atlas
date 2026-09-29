@@ -564,10 +564,10 @@ object SettingsEhScreen : SearchableSettings {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(text = "Language", modifier = Modifier.padding(4.dp))
-                        Text(text = "Original", modifier = Modifier.padding(4.dp))
-                        Text(text = "Translated", modifier = Modifier.padding(4.dp))
-                        Text(text = "Rewrite", modifier = Modifier.padding(4.dp))
+                        Text(text = stringResource(SYMR.strings.language), modifier = Modifier.padding(4.dp))
+                        Text(text = stringResource(SYMR.strings.original), modifier = Modifier.padding(4.dp))
+                        Text(text = stringResource(SYMR.strings.translated), modifier = Modifier.padding(4.dp))
+                        Text(text = stringResource(SYMR.strings.rewrite), modifier = Modifier.padding(4.dp))
                     }
                     LanguageDialogRow(language = "Japanese", row = state.japanese)
                     LanguageDialogRow(language = "English", row = state.english)
@@ -699,8 +699,8 @@ object SettingsEhScreen : SearchableSettings {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(text = "Category", modifier = Modifier.padding(4.dp))
-                        Text(text = "Enabled", modifier = Modifier.padding(4.dp))
+                        Text(text = stringResource(SYMR.strings.category_header), modifier = Modifier.padding(4.dp))
+                        Text(text = stringResource(SYMR.strings.enabled_header), modifier = Modifier.padding(4.dp))
                     }
                     FrontPageCategoriesDialogRow(
                         title = "Doujinshi",

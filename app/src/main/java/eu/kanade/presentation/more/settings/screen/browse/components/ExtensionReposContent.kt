@@ -99,7 +99,7 @@ private fun ExtensionRepoListItem(
 
             IconButton(
                 onClick = {
-                    val url = "${repo.baseUrl}/index.min.json"
+                    val url = if (repo.baseUrl.endsWith(".pb")) repo.baseUrl else "${repo.baseUrl}/index.min.json"
                     context.copyToClipboard(url, url)
                 },
             ) {

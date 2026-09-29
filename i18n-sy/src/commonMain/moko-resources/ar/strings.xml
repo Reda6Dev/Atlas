@@ -251,7 +251,13 @@
     <string name="eh_settings_configuration_failed_message">حدث خطأ أثناء عملية التكوين:%1$s</string>
     <string name="custom_igneous_cookie_message">لا يستطيع بعض المستخدمين الوصول إلى ExHentai بالطريقة العادية، ويتعين عليهم تمرير قيمة محددة لملفات تعريف الارتباط، وهذا الخيار مخصص لهؤلاء المستخدمين.</string>
     <string name="enable_source_blacklist_summary">إخفاء المصادر غير المتوافقة مع %1$s . فرض إعادة تشغيل التطبيق بعد التغيير.</string>
-    <string name="open_debug_menu_summary">تهكمية</string>
+    <string name="open_debug_menu_summary"><![CDATA[خيارات خاصة بالمطورين وإصلاح الأخطاء. <font color=\'red\'>لا تعدل هذه الإعدادات إلا إذا كنت تعلم ماذا تفعل!</font>]]></string>
+    <string name="debug_menu_title">قائمة التصحيح (DEBUG MENU)</string>
+    <string name="debug_functions_header">الوظائف البرمجية (Functions)</string>
+    <string name="debug_toggles_header">مفاتيح الاختيار والتصحيح (Toggles)</string>
+    <string name="debug_function_returned_result">أرجعت الدالة النتيجة التالية:\n\n%1$s</string>
+    <string name="debug_function_threw_exception">حدث استثناء أثناء تنفيذ الدالة:\n\n%1$s</string>
+    <string name="debug_toggle_modified">مُعدَّل</string>
     <string name="data_saver_image_quality_summary">تعني القيم الأعلى أنه تم حفظ نسبة أعلى من جودة الصورة، ولكنها تعني أيضًا أن حجم الملف أكبر، ونسبة ٨٠ بالمائة هي متوسط جيد بين حجم الملف وجودة الصورة</string>
     <string name="pref_category_eh">E- Hentai</string>
     <string name="clear_db_exclude_read">الاحتفاظ بالإدخالات مع الفصول المقروءة</string>
@@ -392,7 +398,7 @@
     <string name="delete_tag">حذف الفئة</string>
     <string name="delete_tag_confirmation">هل ترغب في حذف الفئة %s ؟</string>
     <string name="ext_redundant">متكرر</string>
-    <string name="redundant_extension_message">هذا المصدر زائد عن الحاجة ولن يتم استخدامه داخل هذا الإصدار من Tachiyomi.</string>
+    <string name="redundant_extension_message">هذا المصدر زائد عن الحاجة ولن يتم استخدامه داخل هذا الإصدار من Atlas.</string>
     <string name="select_sources">حدد المصادر</string>
     <string name="select_none">لا تختر شيء</string>
     <string name="migration">النقل</string>
@@ -465,6 +471,10 @@
     <string name="manga_updates_id">معرف Manga updates</string>
     <string name="delete_merged_entry">هل أنت متأكد</string>
     <string name="translated">مُتَرْجَم</string>
+    <string name="original">الأصلية</string>
+    <string name="rewrite">إعادة كتابة</string>
+    <string name="category_header">الفئة</string>
+    <string name="enabled_header">مُفعّل</string>
     <string name="author">الكاتب</string>
     <string name="japanese_title">العنوان الياباني</string>
     <string name="english_title">العنوان الإنجليزي</string>
@@ -637,5 +647,6 @@
     <string name="file_extension">امتداد الملف</string>
     <string name="base_url">عنوان URL الأساسي</string>
     <string name="final_chapter">الفصل الأخير</string>
+    <string name="pref_include_chapter_url_hash">تضمين مجزأ رابط الفصل (URL Hash)</string>
     <string name="pref_include_chapter_url_hash_desc">أضف الأحرف الستة الأولى من تجزئة MD5 الخاصة بعنوان URL الخاص بالفصل إلى اسم ملف أو مجلد الفصل.</string>
 </resources>
