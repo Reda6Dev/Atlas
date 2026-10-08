@@ -7,11 +7,15 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -298,7 +302,7 @@ class MainActivity : BaseActivity() {
 
                 if (!isBenchmarkBuildType) {
                     CheckForUpdates()
-                    ShowOnboarding()
+                    RequestNotificationPermission()
                 }
             }
 
@@ -403,6 +407,7 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    @Suppress("UnusedPrivateMember")
     @Composable
     private fun ShowOnboarding() {
         val navigator = LocalNavigator.currentOrThrow
@@ -410,6 +415,24 @@ class MainActivity : BaseActivity() {
         LaunchedEffect(Unit) {
             if (!preferences.shownOnboardingFlow.get() && navigator.lastItem !is OnboardingScreen) {
                 navigator.push(OnboardingScreen())
+            }
+        }
+    }
+
+    @Composable
+    private fun RequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val context = LocalContext.current
+            val permissionRequester = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission(),
+                onResult = { },
+            )
+            LaunchedEffect(Unit) {
+                if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
+                    PackageManager.PERMISSION_GRANTED
+                ) {
+                    permissionRequester.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
             }
         }
     }

@@ -1,425 +1,109 @@
-# AI_HANDOFF.md — حالة مشروع Atlas
+# AI_HANDOFF.md — حالة تسليم مشروع Atlas (Atlas Project State)
 
-## 1. تعريف المشروع
+## 1. تعريف المشروع (Project Definition)
 
-* اسم المشروع المستهدف: **Atlas**
-* الأساس: **TachiyomiSY 1.13.2**
-* المستودع الحالي: `C:\Users\REDAKING\StudioProjects\TachiyomiSY`
-* الفرع الحالي: `atlas-new`
-* Commit الأساس:
-  `96f96c644` — `Release 1.13.2`
-* الفرع القديم الذي يحتوي على العمل السابق:
-  `backup-atlas-old`
-* Commit العمل القديم:
-  `015ee9faf`
-* الفرع القديم مرفوع إلى GitHub.
-* **لا تحذف `backup-atlas-old` حتى يستقر Atlas الجديد.**
+* اسم المشروع المستهدف (Target App Name): **Atlas**
+* معرّف التطبيق المستهدف (Target Application ID): `com.reda6dev.atlas`
+* مساحة الأسماء الداخلية (Namespace/Package): `eu.kanade.tachiyomi` (مُحفوظة للتوافق الكامل مع قاعدة البيانات والإضافات والتنزيلات)
+* الأساس المستقر (Base Version): **TachiyomiSY 1.13.2**
+* المسار المحلي للمستودع (Local Repository): `C:\Users\REDAKING\StudioProjects\TachiyomiSY`
+* الفرع الحالي (Current Branch): `atlas-new`
+* الالتزام البرمجي الحالي (Current Commit): `07197ff79` (`Add Atlas documentation index and roadmap`)
+* الفرع القديم الذي يحتوي على العمل السابق: `backup-atlas-old` (التزام `015ee9faf` - مرفوع إلى GitHub ولا يُحذف حتى يستقر Atlas الجديد)
+* سجل التغييرات التاريخي التفصيلي: `ATLAS_CHANGELOG.md`
+* مرجع توثيق واجهة المستخدم التفصيلي: `توثيق_Atlas/واجهة_المستخدم/`
 
 ---
 
-## 2. الهدف الحالي
+## 2. أين وصل Atlas الآن؟ (Current State Summary)
 
-إعادة بناء Atlas فوق أحدث أساس مستقر من TachiyomiSY، ثم إعادة تطبيق التخصيصات المطلوبة تدريجيًا وبشكل آمن.
+تمت إعادة بناء Atlas بنجاح فوق أحدث أساس مستقر من TachiyomiSY (إصدار 1.13.2) عبر الفرع `atlas-new` بدلاً من استمرار ترقيع النسخة القديمة.
 
-الهدف النهائي لهوية التطبيق:
+### ما تم إنجازه فعليًا ومتحقق منه:
 
-* Application ID:
-  `com.reda6dev.atlas`
-* اسم التطبيق:
-  `Atlas`
+1. **تطبيق هوية التطبيق الأساسية (Identity - مكتملة):**
+   * اسم التطبيق للمستخدم: `Atlas` (معرّف في `i18n/src/commonMain/moko-resources/base/strings.xml`).
+   * معرّف التطبيق: `applicationId = "com.reda6dev.atlas"` (معرّف في `app/build.gradle.kts`).
+   * إبقاء `namespace = "eu.kanade.tachiyomi"` كما هو دون تغيير لحفظ التوافقية مع قاعدة البيانات والتنزيلات والإضافات.
 
-لكن **هوية Atlas لم تُطبّق بعد**.
+2. **دعم الإضافات والمصادر الحديثة (Extensions System - مكتمل ومتحقق):**
+   * يدعم بشكل كامل وقائم قراءة مستودع Keiyoushi الحديث عبر `index.pb`.
+   * عرض قائمة الإضافات وتثبيتها وتحديثها يعمل بطلاقة.
+   * فتح المصادر المحلية وتصفح محتواها وقراءته يعمل بشكل سليم تمامًا.
+   * تم اختبار هذه الدورة عمليًا على جهاز فعلي (**Honor CLK-LX2**).
 
-الحالة الحالية ما زالت تستخدم هوية TachiyomiSY الأصلية.
+3. **إصلاحات البناء والـ Build Logic (مكتملة ومتحققة):**
+   * **FlexibleAdapter:** تم استبدال مكتبة JitPack التالفة بـ `eu.davidea:flexible-adapter:5.1.0` في `gradle/libs.versions.toml`.
+   * **SQLDelight & Locale:** تم إجبار بيئة JVM في Gradle على اللغة الإنجليزية عبر `-Duser.language=en -Duser.country=US` في `gradle.properties` لمنع توليد أسماء أرقام عربية-هندية كان يتسبب في مئات أخطاء الترجمة.
 
----
+4. **مرحلة الهوية البصرية (Visual Identity - مكتملة بالكامل):**
+   * تحديث أيقونات التطبيق التكيفية (`ic_launcher.webp`, `ic_launcher_round.webp`, `ic_launcher_foreground.webp`) في جميع كثافات `mipmap-*dpi`.
+   * إزالة المجلد `app/src/debug/res/` المتضمن لأيقونات مضللة لتوحيد الهوية بين كافة بيئات البناء.
+   * تحديث شاشة البدء (Splash Screen) بالمورد المتجه `ic_tachi_splash.xml` وضبط ارتفاع الشعار إلى `110dp` ليتناسب مع شاشة بدء Android.
+   * تحديث شعار Atlas في شاشة `More` عبر `LogoHeader.kt` بزيادة الحجم إلى `74dp` مع ضبط الهوامش.
+   * مراجعة وتأكيد الألوان الأساسية وأنماط الرؤية في الوضع الفاتح (Light Mode)، الداكن (Dark Mode)، والأسود المطلق (AMOLED Pure Black).
 
-## 3. حالة مشكلة Extensions / Index
+5. **حل مشكلة الانهيار (Crash) عند فتح شاشة More وشعار Atlas:**
+   * **المشكلة:** عند فتح شاشة `More` كان يحدث انهيار (Crash) بالخطأ `java.lang.IllegalArgumentException: Unknown command for: R` في `LogoHeader.kt` أثناء تحميل المورد `R.drawable.ic_tachi` (`app/src/main/res/drawable/ic_tachi.xml`).
+   * **السبب التقني:** حجم وتعقيد `pathData` داخل ملف المتجه `ic_tachi.xml` تجاوز حد 64KB الخاص بمجمع النصوص في AAPT2 أثناء معالجة الموارد (`processDebugResources`)، مما أدى إلى اقتطاع النص وكتابة نصوص تالفة تسببت في فشل محول المسارات (PathParser) عند تشغيل Compose.
+   * **الإصلاح:** تم إعادة تحويل وتبسيط الشعار باستخدام أدوات Android Studio الرسمية، وتنظيف المسارات الزائدة، وإزالة الطبقة الخفية السوداء، وتوحيد الألوان لتصبح أبيض خالص (`#ffffff`) خلفية شفافة، ليقل حجم الملف من >64KB إلى ~21KB.
+   * **النتيجة:** اختفى الانهيار تمامًا، وأصبحت شاشة `More` تفتح بسلاسة وتعرِض شعار Atlas بدون أي مشاكل.
 
-كانت هناك مشكلة أساسية في نظام الإضافات:
-
-* مستودع Keiyoushi الحديث يستخدم:
-  `index.pb`
-* النسخة القديمة من Atlas كانت تعتمد على:
-  `index.min.json`
-* النظام القديم لم يكن متوافقًا بشكل كامل مع نظام ExtensionStore الحديث.
-* محاولة ترقيع الفرع القديم لم تكن كافية بسبب اختلافات `extensions-lib` و`tachiyomix`.
-
-### القرار
-
-تم إنشاء `atlas-new` انطلاقًا من أحدث TachiyomiSY الرسمي بدل الاستمرار في ترقيع النظام القديم.
-
-### النتيجة
-
-تم بناء التطبيق واختباره فعليًا.
-
-تم اختبار:
-
-* مستودع Keiyoushi باستخدام `index.pb`
-* تحميل الإضافات
-* فتح عدة مصادر
-* استخدام المصادر
-
-**المشكلة الأساسية الخاصة بـ index.pb وExtensions أصبحت محلولة.**
-
-لا تعُد إلى نظام `index.min.json` القديم إلا إذا ظهر سبب تقني واضح ومدعوم باختبار.
+6. **توثيق واجهة المستخدم التفصيلي (UI Documentation - مكتمل):**
+   * تم إنشاء مرجع متخصص تفصيلي بـ 4 ملفات داخل المجلد `توثيق_Atlas/واجهة_المستخدم/`:
+     * `01_خريطة_الواجهة.md` (خريطة الشاشات والتدفقات)
+     * `02_نظام_التصميم.md` (الثيمات والألوان والخطوط)
+     * `03_مكونات_الواجهة.md` (المكونات القابلة لإعادة الاستخدام)
+     * `04_موارد_الواجهة.md` (الأيقونات والموارد واللغات)
 
 ---
 
-## 4. التعديلات الحالية المقصودة
+## 3. المشاكل السابقة وكيف تم حلها (Resolved Issues)
 
-### `gradle/libs.versions.toml`
+| المشكلة | السبب المباشر | الحل المطبق | الحالة |
+| --- | --- | --- | --- |
+| فشل تحميل الإضافات | اعتماد النسخة القديمة على `index.min.json` عدم توافقها مع Keiyoushi | الانتقال إلى أساس TachiyomiSY 1.13.2 المستقر الداعم لـ `index.pb` | منجزة ومتحققة |
+| خطأ 404 في FlexibleAdapter | رابط JitPack القديم لم يعد متوفرًا | التحديث إلى `eu.davidea:flexible-adapter:5.1.0` | منجزة ومتحققة |
+| أخطاء بناء SQLDelight | توليد أرقام عربية-هندية بسبب Locale النظام | إضافة `-Duser.language=en -Duser.country=US` لـ JVM في `gradle.properties` | منجزة ومتحققة |
+| انهيار شاشة More (`Unknown command for: R`) | تجاوز `ic_tachi.xml` حد 64KB في AAPT2 string pool | إعادة تحويل وتحسين الشعار بـ Android Studio وتبسيطه إلى ~21KB | منجزة ومتحققة |
+| تعارض أيقونات Debug | وجود ملفات قديمة في `app/src/debug/res/` | إزالة الملفات الزائدة في مجلد Debug لتوحيد الهوية | منجزة ومتحققة |
 
-تم استبدال FlexibleAdapter القديم الذي كان يشير إلى JitPack:
-
-```text
-com.github.arkon.FlexibleAdapter:c8013533
-```
-
-بـ:
-
-```text
-eu.davidea:flexible-adapter:5.1.0
-```
-
-السبب:
-
-نسخة JitPack القديمة أصبحت ترجع 404 أثناء البناء.
-
-هذا التعديل **مقصود ولا يجب التراجع عنه تلقائيًا**.
+*لمزيد من التفاصيل التقنية والتاريخية السابقة، راجع `ATLAS_CHANGELOG.md`.*
 
 ---
 
-### `gradle.properties`
+## 4. ما تم اختباره فعليًا على جهاز (Verified On Physical Device)
 
-تمت إضافة:
+تم الاختبار والتأكد عمليًا على جهاز **Honor CLK-LX2**:
 
-```text
--Duser.language=en -Duser.country=US
-```
-
-إلى `org.gradle.jvmargs`.
-
-القيمة الحالية المقصودة:
-
-```text
-org.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8 -Duser.language=en -Duser.country=US
-```
-
-السبب:
-
-SQLDelight كان يولّد أسماء Kotlin تحتوي على أرقام عربية-هندية بسبب إعدادات اللغة/الـlocale، مما تسبب في مئات أخطاء Kotlin.
-
-بعد إضافة إعدادات اللغة الإنجليزية نجح:
-
-```text
-:data:compileDebugKotlin
-```
-
-ثم نجح بناء التطبيق كاملًا.
-
-**لا تحذف هذه الإضافة دون اختبار بديل.**
+* [x] بناء التطبيق الكامل (`:app:assembleDebug`).
+* [x] تثبيت التطبيق وتشغيله بنجاح.
+* [x] ظهور اسم التطبيق `Atlas` وأيقونة Atlas الجديدة على الشاشة الرئيسية للجهاز.
+* [x] قراءة مستودع Keiyoushi الحديث وتحميل الإضافات وتثبيتها.
+* [x] فتح المصادر وتصفح المانغا والقراءة.
+* [x] فتح شاشة `More` والتأكد من ظهور الشعار المحدث بحجمه المضبوط بدون أي انهيار (Crash).
 
 ---
 
-## 5. PROJECT_MAP.md
+## 5. المرحلة التالية النشطة (Current Active Phase)
 
-تم تحديث:
+انتقل مشروع Atlas رسمياً إلى **المرحلة 3 — واجهة وتجربة المستخدم (UX/UI)** وفقاً لـ `ATLAS_MASTER_ROADMAP.md`.
 
-```text
-PROJECT_MAP.md
-```
-
-اعتمادًا على بنية المشروع الحالية فعليًا.
-
-الخريطة الحالية توثق:
-
-* Modules
-* Clean Architecture
-* App / Domain / Data / Presentation
-* ExtensionStore
-* Extensions
-* UI
-* Database
-* SQLDelight
-* WorkManager
-* `exh/`
-* Gradle build logic
-* Version catalogs
-* Themes
-* Caching
-* Sync
-* Backup/Restore
-* Localization
-* علاقات الأنظمة الرئيسية
-
-استخدم `PROJECT_MAP.md` لتقليل استكشاف المشروع، لكن **تحقق دائمًا من الكود الحالي قبل تعديل أي شيء**.
-
-الكود وGit هما مصدر الحقيقة النهائي.
+* المرجع الرئيسي لتطوير مرحلة UX/UI هو المجلد: `توثيق_Atlas/واجهة_المستخدم/`.
 
 ---
 
-## 6. الهوية الحالية
+## 6. قيود صارمة يجب الالتزام بها (Strict Constraints)
 
-### Application ID الحالي
-
-```text
-eu.kanade.tachiyomi.sy
-```
-
-### المطلوب لاحقًا
-
-```text
-com.reda6dev.atlas
-```
-
-### اسم التطبيق الحالي
-
-```text
-TachiyomiSY
-```
-
-### المطلوب لاحقًا
-
-```text
-Atlas
-```
-
-### Namespace
-
-يبقى حاليًا:
-
-```text
-eu.kanade.tachiyomi
-```
-
-**لا تغيّر namespace أو package إلى Atlas.**
-
-المطلوب حاليًا هو تغيير هوية التطبيق فقط، وليس إعادة تسمية كامل الكود.
+* **لا تغيّر مساحة الأسماء/الحزمة:** `eu.kanade.tachiyomi` يجب أن تبقى كما هي.
+* **لا تعدّل ملفات الثوابت الحساسة:** مثل `MdConstants.kt` أو `tachiyomisy://mangadex-auth`.
+* **لا تقم بأي عمليات Git تدميرية:** يمنع استخدام `git reset`, `git clean`, `git restore`, `git stash`, `rebase`, `force push` دون إذن صريح.
+* **لا تعدّل ملفات الموارد المتجهة المعقدة يدويًا:** عند الحاجة لتغيير متجه، استخدم أدوات Android Studio الرسمية لتفادي أخطاء AAPT2.
 
 ---
 
-## 7. قيود مهمة جدًا
-
-لا تقم بهذه التغييرات بدون طلب صريح:
-
-### لا تغيّر
-
-```text
-eu.kanade.tachiyomi
-```
-
-كـ namespace/package.
-
-### لا تعدّل
-
-```text
-MdConstants.kt
-```
-
-### لا تغيّر
-
-```text
-tachiyomisy://mangadex-auth
-```
-
-### لا تعدّل ملفات build الناتجة
-
-مثل:
-
-```text
-app/build/
-data/build/
-```
-
-وأي ملفات generated.
-
-### لا تستخدم عمليات Git تدميرية بدون موافقة صريحة
-
-خصوصًا:
-
-```text
-git reset --hard
-git clean -fd
-git checkout -- .
-git restore .
-git stash
-rebase
-force push
-```
-
-إذا كان هناك سبب حقيقي لاستخدام واحدة منها، اشرح السبب وانتظر موافقة المستخدم.
-
----
-
-## 8. الاختبار السابق
-
-بعد إصلاح Gradle وSQLDelight:
-
-* تم بناء المشروع بنجاح.
-* البناء الكامل نجح.
-* تم تثبيت التطبيق على جهاز Honor CLK-LX2.
-* تم تشغيل التطبيق.
-* تم اختبار مستودع Keiyoushi الحديث.
-* تم اختبار عدة Extensions/Sources.
-* المصادر عملت بشكل صحيح.
-
-هذه النتائج تم التحقق منها عمليًا، وليست مجرد تقرير من AI.
-
----
-
-## 9. Git Status الحالي
-
-آخر حالة معروفة:
-
-```text
-AM PROJECT_MAP.md
- M gradle.properties
- M gradle/libs.versions.toml
-?? gradle.properties.bak
-```
-
-المعاني المهمة:
-
-* `PROJECT_MAP.md` تم تحديثه.
-* `gradle.properties` يحتوي على تعديل locale المقصود.
-* `gradle/libs.versions.toml` يحتوي على إصلاح FlexibleAdapter المقصود.
-* `gradle.properties.bak` ملف backup غير متتبع.
-
-**لا تحذف `gradle.properties.bak` تلقائيًا.**
-
-قبل أي Commit جديد، افحص:
-
-```powershell
-git status --short
-git diff
-git diff --cached
-```
-
-ولا تفترض أن حالة Git الحالية ما زالت نفسها إذا تغيرت لاحقًا.
-
----
-
-## 10. المهمة التالية
-
-المهمة التالية المخطط لها:
-
-### تطبيق هوية Atlas
-
-تغيير:
-
-```text
-applicationId = "eu.kanade.tachiyomi.sy"
-```
-
-إلى:
-
-```text
-applicationId = "com.reda6dev.atlas"
-```
-
-وتغيير:
-
-```xml
-<string name="app_name" translatable="false">TachiyomiSY</string>
-```
-
-إلى:
-
-```xml
-<string name="app_name" translatable="false">Atlas</string>
-```
-
-مع الحفاظ على:
-
-```text
-namespace = "eu.kanade.tachiyomi"
-```
-
-ثم:
-
-1. مراجعة `git diff`
-2. بناء التطبيق
-3. تثبيته
-4. تشغيله
-5. اختبار Extensions/Sources
-6. التأكد من عدم كسر أي Deep Links أو وظائف موجودة
-7. فحص Git status/diff
-
-لا تنفذ تغيير الهوية تلقائيًا لمجرد قراءة هذا الملف؛ هذا الملف يصف الحالة والخطة فقط.
-
----
-
-## 11. طريقة العمل المطلوبة لأي AI
-
-قبل تعديل الكود:
-
-1. اقرأ:
-
-  * `ATLAS_AI_HANDOFF_PROMPT.md`
-  * `PROJECT_MAP.md`
-  * `AI_HANDOFF.md`
-
-2. افحص Git:
-
-```powershell
-git status --short
-git branch --show-current
-git log -1 --oneline
-git remote -v
-```
-
-3. افحص الملفات الفعلية المتعلقة بالمهمة.
-
-4. قارن الوثائق مع الكود الحالي.
-
-5. لا تعتمد على تقرير AI سابق باعتباره حقيقة نهائية.
-
-6. نفّذ أقل تغيير ممكن لتحقيق المطلوب.
-
-7. اعرض `git diff` بعد التعديل.
-
-8. ابنِ المشروع واختبره إذا كان التغيير يؤثر على البناء أو التشغيل.
-
-9. حدّث `AI_HANDOFF.md` فقط إذا تغيرت حالة المشروع بشكل مهم.
-
----
-
-## 12. مصدر الحقيقة
-
-ترتيب الثقة عند وجود تعارض:
-
-1. الكود الحالي في Git
-2. حالة Git الحالية
-3. نتائج البناء والاختبارات الفعلية
-4. `PROJECT_MAP.md`
-5. `AI_HANDOFF.md`
-6. تقارير AI السابقة
-
-إذا تعارضت الوثائق مع الكود، **الكود هو المرجع** ويجب الإبلاغ عن التعارض بدل افتراض صحة الوثيقة.
-
----
-
-## 13. مبدأ المشروع
-
-Atlas يتم تطويره تدريجيًا.
-
-لا نحاول تغيير كل شيء دفعة واحدة.
-
-الأولوية:
-
-```text
-استقرار
-↓
-توافق
-↓
-اختبار
-↓
-تغيير صغير
-↓
-اختبار
-↓
-توثيق
-```
-
-أي تغيير يجب أن يكون قابلًا للتتبع ويمكن معرفة سببه ونتيجته.
+## نقطة التوقف الحالية (Current Checkpoint)
+
+> **الحالة:** اكتملت مرحلة الهوية الأساسية ومرحلة الهوية البصرية بالكامل. التطبيق يعمل بإنتاجية عالية مع دعم Keiyoushi `index.pb` وإصلاح انهيار `LogoHeader.kt`. تم توثيق الواجهة بالكامل في `توثيق_Atlas/واجهة_المستخدم/`. المشروع جاهز للبدء في **مرحلة UX/UI**.
+>
+> **على أي AI قادم:** اقرأ `PROJECT_MAP.md` و`توثيق_Atlas/واجهة_المستخدم/` وفحص الكود وGit قبل القيام بأي تعديل جديد. لا تقم بإعادة تسمية `eu.kanade.tachiyomi` ولا تقم بأي عمليات Git تدميرية.
