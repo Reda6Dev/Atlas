@@ -76,6 +76,7 @@ object HomeScreen : Screen() {
     private const val TabNavigatorKey = "HomeTabs"
 
     private val TABS = listOf(
+        HomeTab,
         LibraryTab,
         UpdatesTab,
         HistoryTab,
@@ -95,7 +96,7 @@ object HomeScreen : Screen() {
         // SY <--
 
         TabNavigator(
-            tab = LibraryTab,
+            tab = HomeTab,
             key = TabNavigatorKey,
         ) { tabNavigator ->
             // Provide usable navigator to content screen
@@ -159,9 +160,9 @@ object HomeScreen : Screen() {
                 }
             }
 
-            val goToLibraryTab = { tabNavigator.current = LibraryTab }
+            val goToLibraryTab = { tabNavigator.current = HomeTab }
 
-            BackHandler(enabled = tabNavigator.current != LibraryTab, onBack = goToLibraryTab)
+            BackHandler(enabled = tabNavigator.current != HomeTab, onBack = goToLibraryTab)
 
             LaunchedEffect(Unit) {
                 launch {
