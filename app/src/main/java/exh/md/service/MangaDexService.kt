@@ -30,6 +30,68 @@ class MangaDexService(
     private val headers: Headers,
 ) {
 
+    suspend fun fetchPopularManga(
+        limit: Int = 20,
+        offset: Int = 0,
+    ): MangaListDto {
+        val url = MdApi.manga.toHttpUrl()
+            .newBuilder()
+            .apply {
+                addQueryParameter("limit", limit.toString())
+                addQueryParameter("offset", offset.toString())
+                addQueryParameter("includes[]", MdConstants.Types.coverArt)
+                addQueryParameter("includes[]", MdConstants.Types.author)
+                addQueryParameter("includes[]", MdConstants.Types.artist)
+                addQueryParameter("contentRating[]", "safe")
+                addQueryParameter("contentRating[]", "suggestive")
+                addQueryParameter("order[followedCount]", "desc")
+                addQueryParameter("hasAvailableChapters", "true")
+            }
+            .build()
+
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    url,
+                    headers = headers,
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
+    }
+
+    suspend fun fetchLatestChapters(
+        limit: Int = 20,
+        offset: Int = 0,
+        languages: List<String> = listOf("en"),
+    ): ChapterListDto {
+        val url = MdApi.chapter.toHttpUrl()
+            .newBuilder()
+            .apply {
+                addQueryParameter("limit", limit.toString())
+                addQueryParameter("offset", offset.toString())
+                addQueryParameter("includes[]", MdConstants.Types.manga)
+                addQueryParameter("includes[]", MdConstants.Types.scanlator)
+                addQueryParameter("contentRating[]", "safe")
+                addQueryParameter("contentRating[]", "suggestive")
+                addQueryParameter("order[readableAt]", "desc")
+                languages.forEach { lang ->
+                    addQueryParameter("translatedLanguage[]", lang)
+                }
+            }
+            .build()
+
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    url,
+                    headers = headers,
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
+    }
+
     suspend fun viewMangas(
         ids: List<String>,
     ): MangaListDto {
