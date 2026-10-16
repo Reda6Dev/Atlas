@@ -77,7 +77,7 @@ class AppLanguageScreen : Screen() {
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = tachiyomi.presentation.core.theme.primaryTextColor(),
                                 )
                             }
                         },

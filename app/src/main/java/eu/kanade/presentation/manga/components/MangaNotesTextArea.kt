@@ -63,7 +63,7 @@ fun MangaNotesTextArea(
 ) {
     val scope = rememberCoroutineScope()
     val richTextState = rememberRichTextState()
-    val primaryColor = MaterialTheme.colorScheme.primary
+    val primaryColor = tachiyomi.presentation.core.theme.primaryTextColor()
 
     DisposableEffect(scope, richTextState) {
         snapshotFlow { richTextState.annotatedString }
@@ -206,7 +206,7 @@ fun MangaNotesTextAreaButton(
         Icon(
             imageVector = icon,
             contentDescription = icon.name,
-            tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+            tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else tachiyomi.presentation.core.theme.primaryTextColor(),
             modifier = Modifier
                 .background(color = if (isSelected) MaterialTheme.colorScheme.onBackground else Color.Transparent)
                 .padding(MaterialTheme.padding.extraSmall),

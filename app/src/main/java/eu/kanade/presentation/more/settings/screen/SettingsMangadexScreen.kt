@@ -145,7 +145,7 @@ object SettingsMangadexScreen : SearchableSettings {
                                 .padding(start = 12.dp, end = PrefsHorizontalPadding)
                                 .secondaryItemAlpha(),
                             tint = if (loggedIn.isNotEmpty()) {
-                                MaterialTheme.colorScheme.primary
+                                tachiyomi.presentation.core.theme.primaryTextColor()
                             } else {
                                 MaterialTheme.colorScheme.onSurface
                             },

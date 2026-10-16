@@ -111,7 +111,7 @@ private fun getMarkdownColors(): MarkdownColors {
 @Composable
 @ReadOnlyComposable
 fun getMarkdownLinkStyle() = MaterialTheme.typography.bodyMedium.copy(
-    color = MaterialTheme.colorScheme.primary,
+    color = tachiyomi.presentation.core.theme.primaryTextColor(),
     fontWeight = FontWeight.Bold,
 )
 
@@ -243,7 +243,7 @@ private fun getMarkdownInlineContent() = DefaultMarkdownInlineContent(
                 Icon(
                     imageVector = Icons.Outlined.Image,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = tachiyomi.presentation.core.theme.primaryTextColor(),
                 )
             },
         ),

@@ -13,6 +13,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.presentation.home.HomeScreen
 import eu.kanade.presentation.util.Tab
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import kotlinx.coroutines.flow.collectLatest
 import tachiyomi.i18n.MR
@@ -59,6 +61,23 @@ object HomeTab : Tab {
         HomeScreen(
             state = state,
             onRefresh = { screenModel.refresh() },
+            onOpenSourceSettings = { screenModel.openSourceSettingsDialog() },
+            onSearchClick = {
+                val selectedId = state.selectedSourceId
+                if (selectedId != null) {
+                    navigator.push(BrowseSourceScreen(sourceId = selectedId, listingQuery = ""))
+                } else {
+                    navigator.push(GlobalSearchScreen(""))
+                }
+            },
+            onDisplayModeChange = { mode -> screenModel.setDisplayMode(mode) },
+            onToggleDialogSource = { sourceId -> screenModel.toggleDialogSourceSelection(sourceId) },
+            onSaveSourceSettings = { screenModel.saveSourceSettingsDialog() },
+            onDismissSourceSettings = { screenModel.dismissSourceSettingsDialog() },
+            onTabSelected = { tab -> screenModel.selectTab(tab) },
+            onSourceFilterSelected = { sourceId -> screenModel.selectSource(sourceId) },
+            onLoadMoreLatestChapters = { screenModel.loadMoreLatestChapters() },
+            onLoadMoreDiscover = { screenModel.loadMoreDiscover() },
             onItemClick = { item -> screenModel.onItemClick(item) },
         )
     }

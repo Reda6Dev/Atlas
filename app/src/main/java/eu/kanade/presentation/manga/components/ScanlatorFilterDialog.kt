@@ -79,7 +79,7 @@ fun ScanlatorFilterDialog(
                                         Icons.Rounded.CheckBoxOutlineBlank
                                     },
                                     tint = if (isExcluded) {
-                                        MaterialTheme.colorScheme.primary
+                                        tachiyomi.presentation.core.theme.primaryTextColor()
                                     } else {
                                         LocalContentColor.current
                                     },

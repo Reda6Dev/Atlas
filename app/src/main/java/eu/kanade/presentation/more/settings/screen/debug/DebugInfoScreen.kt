@@ -89,7 +89,7 @@ class DebugInfoScreen : Screen() {
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Autorenew,
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = tachiyomi.presentation.core.theme.primaryTextColor(),
                                 contentDescription = null,
                             )
                         }

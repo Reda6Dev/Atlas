@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.data.updater
 
 import android.content.Context
-import android.os.Build
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import exh.syDebugVersion
@@ -46,11 +45,5 @@ class AppUpdateChecker {
 }
 
 val GITHUB_REPO: String by lazy {
-    // SY -->
-    if (isPreviewBuildType) {
-        "jobobby04/TachiyomiSYPreview"
-    } else {
-        "jobobby04/tachiyomiSY"
-    }
-    // SY <--
+    "Reda6Dev/Atlas"
 }

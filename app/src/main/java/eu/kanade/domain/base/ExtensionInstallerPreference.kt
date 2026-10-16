@@ -26,16 +26,13 @@ class ExtensionInstallerPreference(
         }
     }
 
-    override fun defaultValue() = if (context.hasMiuiPackageInstaller) {
-        ExtensionInstaller.LEGACY
-    } else {
-        ExtensionInstaller.PACKAGEINSTALLER
-    }
+    override fun defaultValue() = ExtensionInstaller.PRIVATE
 
     private fun check(value: ExtensionInstaller): ExtensionInstaller {
         when (value) {
-            ExtensionInstaller.PACKAGEINSTALLER -> {
-                if (context.hasMiuiPackageInstaller) return ExtensionInstaller.LEGACY
+            ExtensionInstaller.PACKAGEINSTALLER,
+            ExtensionInstaller.LEGACY -> {
+                return ExtensionInstaller.PRIVATE
             }
             ExtensionInstaller.SHIZUKU -> {
                 if (!context.isShizukuInstalled) return defaultValue()

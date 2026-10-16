@@ -94,7 +94,7 @@ fun IconItem(label: String, icon: ImageVector, onClick: () -> Unit) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = tachiyomi.presentation.core.theme.primaryTextColor(),
             )
         },
         onClick = onClick,
@@ -125,7 +125,7 @@ fun BaseSortItem(label: String, icon: ImageVector?, onClick: () -> Unit) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = tachiyomi.presentation.core.theme.primaryTextColor(),
                 )
             } else {
                 Spacer(modifier = Modifier.size(24.dp))
@@ -375,7 +375,7 @@ fun TriStateItem(
             } else {
                 when (onClick) {
                     null -> MaterialTheme.colorScheme.onSurface.copy(alpha = DISABLED_ALPHA)
-                    else -> MaterialTheme.colorScheme.primary
+                    else -> tachiyomi.presentation.core.theme.primaryTextColor()
                 }
             },
         )
@@ -415,7 +415,7 @@ fun IconItem(
                 painter = icon,
                 contentDescription = label,
                 tint = if (selected) {
-                    MaterialTheme.colorScheme.primary
+                    tachiyomi.presentation.core.theme.primaryTextColor()
                 } else {
                     MaterialTheme.colorScheme.onSurface
                 },

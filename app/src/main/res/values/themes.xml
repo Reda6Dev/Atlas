@@ -96,6 +96,43 @@
     <!-- Monet theme only support S+ -->
     <style name="Theme.Tachiyomi.Monet" />
 
+    <!--== Atlas Theme ==-->
+    <style name="Theme.Tachiyomi.Atlas">
+        <item name="colorPrimary">@color/atlas_primary</item>
+        <item name="colorOnPrimary">@color/atlas_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/atlas_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/atlas_onPrimaryContainer</item>
+        <item name="colorPrimaryInverse">@color/atlas_inversePrimary</item>
+        <item name="colorSecondary">@color/atlas_secondary</item>
+        <item name="colorOnSecondary">@color/atlas_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/atlas_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/atlas_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/atlas_tertiary</item>
+        <item name="colorOnTertiary">@color/atlas_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/atlas_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/atlas_onTertiaryContainer</item>
+        <item name="android:colorBackground">@color/atlas_background</item>
+        <item name="colorOnBackground">@color/atlas_onBackground</item>
+        <item name="colorSurface">@color/atlas_surface</item>
+        <item name="colorOnSurface">@color/atlas_onSurface</item>
+        <item name="colorSurfaceVariant">@color/atlas_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/atlas_onSurfaceVariant</item>
+        <item name="elevationOverlayColor">@color/atlas_surfaceTint</item>
+        <item name="colorSurfaceInverse">@color/atlas_inverseSurface</item>
+        <item name="colorOnSurfaceInverse">@color/atlas_inverseOnSurface</item>
+        <item name="colorError">@color/atlas_error</item>
+        <item name="colorOnError">@color/atlas_onError</item>
+        <item name="colorErrorContainer">@color/atlas_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/atlas_onErrorContainer</item>
+        <item name="colorOutline">@color/atlas_outline</item>
+        <item name="colorOutlineVariant">@color/atlas_outlineVariant</item>
+        <item name="colorSurfaceContainer">@color/atlas_surfaceContainer</item>
+        <item name="colorSurfaceContainerHigh">@color/atlas_surfaceContainerHigh</item>
+        <item name="colorSurfaceContainerHighest">@color/atlas_surfaceContainerHighest</item>
+        <item name="colorSurfaceContainerLow">@color/atlas_surfaceContainerLow</item>
+        <item name="colorSurfaceContainerLowest">@color/atlas_surfaceContainerLowest</item>
+    </style>
+
     <!--== Catppuccin Theme ==-->
     <style name="Theme.Tachiyomi.Catppuccin">
         <!-- Theme Colors -->

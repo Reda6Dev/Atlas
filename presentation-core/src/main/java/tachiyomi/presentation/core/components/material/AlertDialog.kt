@@ -15,6 +15,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import tachiyomi.presentation.core.theme.secondaryTextColor
 
 @Composable
 fun AlertDialogContent(
@@ -57,7 +58,7 @@ fun AlertDialogContent(
                         .align(Alignment.End),
                 ) {
                     CompositionLocalProvider(
-                        LocalContentColor provides MaterialTheme.colorScheme.primary,
+                        LocalContentColor provides tachiyomi.presentation.core.theme.primaryTextColor(),
                     ) {
                         val textStyle = MaterialTheme.typography.labelLarge
                         ProvideTextStyle(value = textStyle, content = buttons)
@@ -91,7 +92,7 @@ fun AlertDialogContent(
             ) {
                 icon?.let {
                     CompositionLocalProvider(
-                        LocalContentColor provides MaterialTheme.colorScheme.secondary,
+                        LocalContentColor provides secondaryTextColor(),
                     ) {
                         Box(
                             Modifier

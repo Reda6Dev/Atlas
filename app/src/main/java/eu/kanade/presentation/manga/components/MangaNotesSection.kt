@@ -46,7 +46,7 @@ fun MangaNotesSection(
                 onClick = onEditNotes,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
-                    contentColor = MaterialTheme.colorScheme.primary,
+                    contentColor = tachiyomi.presentation.core.theme.primaryTextColor(),
                 ),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier

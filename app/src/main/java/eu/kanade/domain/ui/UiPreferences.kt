@@ -4,11 +4,10 @@ import android.os.Build
 import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.domain.ui.model.TabletUiMode
 import eu.kanade.domain.ui.model.ThemeMode
-import eu.kanade.tachiyomi.util.system.DeviceUtil
-import eu.kanade.tachiyomi.util.system.isDynamicColorAvailable
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.getEnum
+import tachiyomi.domain.library.model.LibraryDisplayMode
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
@@ -28,11 +27,7 @@ class UiPreferences(
 
     val appTheme: Preference<AppTheme> = preferenceStore.getEnum(
         "pref_app_theme",
-        if (DeviceUtil.isDynamicColorAvailable) {
-            AppTheme.MONET
-        } else {
-            AppTheme.DEFAULT
-        },
+        AppTheme.ATLAS,
     )
 
     val themeDarkAmoled: Preference<Boolean> = preferenceStore.getBoolean("pref_theme_dark_amoled_key", false)
@@ -45,11 +40,18 @@ class UiPreferences(
 
     val imagesInDescription: Preference<Boolean> = preferenceStore.getBoolean("pref_render_images_description", true)
 
+    val homeDisplayMode: Preference<LibraryDisplayMode> = preferenceStore.getObjectFromString(
+        "pref_display_mode_home",
+        LibraryDisplayMode.default,
+        LibraryDisplayMode.Serializer::serialize,
+        LibraryDisplayMode.Serializer::deserialize,
+    )
+
     // SY -->
 
     val expandFilters: Preference<Boolean> = preferenceStore.getBoolean("eh_expand_filters", false)
 
-    val hideFeedTab: Preference<Boolean> = preferenceStore.getBoolean("hide_latest_tab", false)
+    val hideFeedTab: Preference<Boolean> = preferenceStore.getBoolean("hide_latest_tab", true)
 
     val feedTabInFront: Preference<Boolean> = preferenceStore.getBoolean("latest_tab_position", false)
 

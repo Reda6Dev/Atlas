@@ -157,7 +157,7 @@ private fun NoChapterNotification(
         ) {
             Icon(
                 imageVector = Icons.Outlined.Info,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = tachiyomi.presentation.core.theme.primaryTextColor(),
                 contentDescription = null,
             )
 

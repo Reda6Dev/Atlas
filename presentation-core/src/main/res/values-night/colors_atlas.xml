@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="atlas_primary">#4CC9F0</color>
+    <color name="atlas_onPrimary">#06223A</color>
+    <color name="atlas_primaryContainer">#17496A</color>
+    <color name="atlas_onPrimaryContainer">#EAF0FF</color>
+    <color name="atlas_inversePrimary">#0A6F96</color>
+    <color name="atlas_secondary">#4CC9F0</color>
+    <color name="atlas_onSecondary">#06223A</color>
+    <color name="atlas_secondaryContainer">#1C3958</color>
+    <color name="atlas_onSecondaryContainer">#4CC9F0</color>
+    <color name="atlas_tertiary">#7EE787</color>
+    <color name="atlas_onTertiary">#06223A</color>
+    <color name="atlas_tertiaryContainer">#17496A</color>
+    <color name="atlas_onTertiaryContainer">#EAF0FF</color>
+    <color name="atlas_background">#0A1128</color>
+    <color name="atlas_onBackground">#EAF0FF</color>
+    <color name="atlas_surface">#131D3B</color>
+    <color name="atlas_onSurface">#EAF0FF</color>
+    <color name="atlas_surfaceVariant">#18244A</color>
+    <color name="atlas_onSurfaceVariant">#9AA8CC</color>
+    <color name="atlas_surfaceTint">#4CC9F0</color>
+    <color name="atlas_inverseSurface">#EAF0FF</color>
+    <color name="atlas_inverseOnSurface">#0A1128</color>
+    <color name="atlas_error">#FF7A93</color>
+    <color name="atlas_onError">#3A0A18</color>
+    <color name="atlas_errorContainer">#F0698A</color>
+    <color name="atlas_onErrorContainer">#3A0A18</color>
+    <color name="atlas_outline">#22305A</color>
+    <color name="atlas_outlineVariant">#22305A</color>
+    <color name="atlas_surfaceContainerLowest">#0A1128</color>
+    <color name="atlas_surfaceContainerLow">#131D3B</color>
+    <color name="atlas_surfaceContainer">#18244A</color>
+    <color name="atlas_surfaceContainerHigh">#18244A</color>
+    <color name="atlas_surfaceContainerHighest">#22305A</color>
+</resources>

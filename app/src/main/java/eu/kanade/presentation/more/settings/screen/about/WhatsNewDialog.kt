@@ -70,7 +70,7 @@ fun WhatsNewDialog(onDismissRequest: () -> Unit) {
                             Column(Modifier.fillMaxWidth()) {
                                 Text(
                                     text = stringResource(SYMR.strings.changelog_version, changelog.version),
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = tachiyomi.presentation.core.theme.primaryTextColor(),
                                     fontWeight = FontWeight.Bold,
                                     style = MaterialTheme.typography.titleSmall,
                                 )

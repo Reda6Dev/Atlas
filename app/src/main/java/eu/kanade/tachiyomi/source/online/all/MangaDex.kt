@@ -8,13 +8,13 @@ import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
-import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import eu.kanade.tachiyomi.source.online.FollowsSource
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LoginSource
@@ -41,6 +41,7 @@ import exh.md.service.MangaDexService
 import exh.md.service.SimilarService
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdApi
+import exh.md.utils.MdConstants
 import exh.md.utils.MdLang
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
@@ -175,27 +176,66 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return mangaHandler.getMangaFromChapterId(id)?.let { MdUtil.buildMangaUrl(it) }
     }
 
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))
-    override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
-        val request = delegate.latestUpdatesRequest(page)
-        val url = request.url.newBuilder()
-            .removeAllQueryParameters("includeFutureUpdates")
-            .build()
-        return client.newCall(request.newBuilder().url(url).build())
-            .asObservableSuccess()
-            .map { response ->
-                delegate.latestUpdatesParse(response)
-            }
+    override suspend fun getPopularManga(page: Int): MangasPage {
+        val popularDto = mangadexService.fetchPopularManga(limit = 20, offset = (page - 1) * 20)
+        val mangas = popularDto.data.map { dto ->
+            MdUtil.createMangaEntry(dto, lang)
+        }
+        return MangasPage(mangas, popularDto.offset + popularDto.limit < popularDto.total)
     }
 
     override suspend fun getLatestUpdates(page: Int): MangasPage {
-        val request = delegate.latestUpdatesRequest(page)
-        val url = request.url.newBuilder()
-            .removeAllQueryParameters("includeFutureUpdates")
-            .build()
+        val latestChaptersDto = mangadexService.fetchLatestChapters(
+            limit = 20,
+            offset = (page - 1) * 20,
+            languages = listOf(lang, "en"),
+        )
 
-        val response = client.newCall(request.newBuilder().url(url).build()).awaitSuccess()
-        return delegate.latestUpdatesParse(response)
+        val chapterList = latestChaptersDto.data
+        val mangaIds = chapterList.mapNotNull { ch ->
+            ch.relationships.firstOrNull { it.type == MdConstants.Types.manga }?.id
+        }.distinct()
+
+        val mangaDetailsMap = if (mangaIds.isNotEmpty()) {
+            runCatching {
+                mangadexService.viewMangas(mangaIds).data.associateBy { it.id }
+            }.getOrDefault(emptyMap())
+        } else {
+            emptyMap()
+        }
+
+        val mangas = mangaIds.mapNotNull { mangaId ->
+            mangaDetailsMap[mangaId]?.let { MdUtil.createMangaEntry(it, lang) }
+        }
+
+        return MangasPage(mangas, latestChaptersDto.offset + latestChaptersDto.limit < latestChaptersDto.total)
+    }
+
+    override suspend fun getMangaUpdate(
+        manga: SManga,
+        chapters: List<SChapter>,
+        fetchDetails: Boolean,
+        fetchChapters: Boolean,
+    ): SMangaUpdate {
+        val updatedManga = if (fetchDetails) {
+            mangaHandler.getMangaDetails(
+                manga,
+                id,
+                coverQuality(),
+                tryUsingFirstVolumeCover(),
+                altTitlesInDesc(),
+                finalChapterInDesc(),
+                preferExtensionLangTitle(),
+            )
+        } else {
+            manga
+        }
+        val updatedChapters = if (fetchChapters) {
+            mangaHandler.getChapterList(manga, blockedGroups(), blockedUploaders())
+        } else {
+            chapters
+        }
+        return SMangaUpdate(updatedManga, updatedChapters)
     }
 
     @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))
@@ -343,49 +383,49 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     companion object {
-        private const val dataSaverPref = "dataSaverV5"
+        private const val DATA_SAVER_PREF = "dataSaverV5"
         fun getDataSaverPreferenceKey(dexLang: String): String {
-            return "${dataSaverPref}_$dexLang"
+            return "${DATA_SAVER_PREF}_$dexLang"
         }
 
-        private const val standardHttpsPortPref = "usePort443"
+        private const val STANDARD_HTTPS_PORT_PREF = "usePort443"
         fun getStandardHttpsPreferenceKey(dexLang: String): String {
-            return "${standardHttpsPortPref}_$dexLang"
+            return "${STANDARD_HTTPS_PORT_PREF}_$dexLang"
         }
 
-        private const val blockedGroupsPref = "blockedGroups"
+        private const val BLOCKED_GROUPS_PREF = "blockedGroups"
         fun getBlockedGroupsPrefKey(dexLang: String): String {
-            return "${blockedGroupsPref}_$dexLang"
+            return "${BLOCKED_GROUPS_PREF}_$dexLang"
         }
 
-        private const val blockedUploaderPref = "blockedUploader"
+        private const val BLOCKED_UPLOADER_PREF = "blockedUploader"
         fun getBlockedUploaderPrefKey(dexLang: String): String {
-            return "${blockedUploaderPref}_$dexLang"
+            return "${BLOCKED_UPLOADER_PREF}_$dexLang"
         }
 
-        private const val coverQualityPref = "thumbnailQuality"
+        private const val COVER_QUALITY_PREF = "thumbnailQuality"
         fun getCoverQualityPrefKey(dexLang: String): String {
-            return "${coverQualityPref}_$dexLang"
+            return "${COVER_QUALITY_PREF}_$dexLang"
         }
 
-        private const val tryUsingFirstVolumeCoverPref = "tryUsingFirstVolumeCover"
+        private const val TRY_USING_FIRST_VOLUME_COVER_PREF = "tryUsingFirstVolumeCover"
         fun getTryUsingFirstVolumeCoverKey(dexLang: String): String {
-            return "${tryUsingFirstVolumeCoverPref}_$dexLang"
+            return "${TRY_USING_FIRST_VOLUME_COVER_PREF}_$dexLang"
         }
 
-        private const val altTitlesInDescPref = "altTitlesInDesc"
+        private const val ALT_TITLES_IN_DESC_PREF = "altTitlesInDesc"
         fun getAltTitlesInDescKey(dexLang: String): String {
-            return "${altTitlesInDescPref}_$dexLang"
+            return "${ALT_TITLES_IN_DESC_PREF}_$dexLang"
         }
 
-        private const val finalChapterInDescPref = "finalChapterInDesc"
+        private const val FINAL_CHAPTER_IN_DESC_PREF = "finalChapterInDesc"
         fun getFinalChapterInDescPrefKey(dexLang: String): String {
-            return "${finalChapterInDescPref}_$dexLang"
+            return "${FINAL_CHAPTER_IN_DESC_PREF}_$dexLang"
         }
 
-        private const val preferExtensionLangTitlePref = "preferExtensionLangTitle"
+        private const val PREFER_EXTENSION_LANG_TITLE_PREF = "preferExtensionLangTitle"
         fun getPreferExtensionLangTitlePrefKey(dexLang: String): String {
-            return "${preferExtensionLangTitlePref}_$dexLang"
+            return "${PREFER_EXTENSION_LANG_TITLE_PREF}_$dexLang"
         }
     }
 }

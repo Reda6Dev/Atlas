@@ -77,15 +77,15 @@ class PageHandler(
 
     @Suppress("UNCHECKED_CAST")
     private fun updateExtensionVariable(mangadex: Source, atHomeRequestUrl: String) {
-        val mangadexSuperclass = mangadex::class.superclasses.first()
+        val mangadexSuperclass = mangadex::class.superclasses.firstOrNull() ?: return
 
         val helperCallable = mangadexSuperclass.members.find { it.name == "helper" } ?: return
         helperCallable.isAccessible = true
-        val helper = helperCallable.call(mangadex) ?: return
+        val helper = runCatching { helperCallable.call(mangadex) }.getOrNull() ?: return
 
         val tokenTrackerCallable = helper::class.members.find { it.name == "tokenTracker" } ?: return
         tokenTrackerCallable.isAccessible = true
-        val tokenTracker = tokenTrackerCallable.call(helper) as? HashMap<String, Long> ?: return
+        val tokenTracker = runCatching { tokenTrackerCallable.call(helper) as? HashMap<String, Long> }.getOrNull() ?: return
         tokenTracker[atHomeRequestUrl] = System.currentTimeMillis()
     }
 
@@ -95,15 +95,16 @@ class PageHandler(
         dataSaver: Boolean,
     ): List<Page> {
         val hash = atHomeDto.chapter.hash
+        val baseUrl = atHomeDto.baseUrl
         val pageArray = if (dataSaver) {
-            atHomeDto.chapter.dataSaver.map { "/data-saver/$hash/$it" }
+            atHomeDto.chapter.dataSaver.map { "$baseUrl/data-saver/$hash/$it" }
         } else {
-            atHomeDto.chapter.data.map { "/data/$hash/$it" }
+            atHomeDto.chapter.data.map { "$baseUrl/data/$hash/$it" }
         }
         val now = System.currentTimeMillis()
 
         return pageArray.mapIndexed { pos, imgUrl ->
-            Page(pos, "${atHomeDto.baseUrl},$atHomeRequestUrl,$now", imgUrl)
+            Page(pos, "$baseUrl,$atHomeRequestUrl,$now", imgUrl)
         }
     }
 

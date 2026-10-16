@@ -19,3 +19,16 @@ local.properties
 google-services.json
 /app/src/main/assets/client_secrets.json
 *.apk
+
+# Atlas local documentation and design references
+ATLAS_INDEX.md
+AI_HANDOFF.md
+ATLAS_MASTER_ROADMAP.md
+presentation-core/ATLAS_AI_HANDOFF_PROMPT.md
+ATLAS_CHANGELOG.md
+توثيق_Atlas/
+DESIGN_COVERAGE.md
+Atlas_Design_Reference/
+Atlas — المجموعات أ وب وج-png/
+Atlas — المجموعات أ وب وج.html
+DESIGN_FEASIBILITY.md

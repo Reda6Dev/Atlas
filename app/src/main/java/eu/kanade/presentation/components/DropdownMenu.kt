@@ -65,7 +65,7 @@ fun RadioMenuItem(
                 Icon(
                     imageVector = Icons.Outlined.RadioButtonChecked,
                     contentDescription = stringResource(MR.strings.selected),
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = tachiyomi.presentation.core.theme.primaryTextColor(),
                 )
             } else {
                 Icon(

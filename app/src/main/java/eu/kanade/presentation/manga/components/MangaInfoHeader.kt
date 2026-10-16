@@ -207,7 +207,7 @@ fun MangaActionRow(
                 stringResource(MR.strings.add_to_library)
             },
             icon = if (favorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-            color = if (favorite) MaterialTheme.colorScheme.primary else defaultActionButtonColor,
+            color = if (favorite) tachiyomi.presentation.core.theme.primaryTextColor() else defaultActionButtonColor,
             onClick = onAddToLibraryClicked,
             onLongClick = onEditCategory,
         )
@@ -222,7 +222,7 @@ fun MangaActionRow(
                 )
             },
             icon = Icons.Default.HourglassEmpty,
-            color = if (isUserIntervalMode) MaterialTheme.colorScheme.primary else defaultActionButtonColor,
+            color = if (isUserIntervalMode) tachiyomi.presentation.core.theme.primaryTextColor() else defaultActionButtonColor,
             onClick = { onEditIntervalClicked?.invoke() },
         )
         MangaActionButton(
@@ -232,7 +232,7 @@ fun MangaActionRow(
                 pluralStringResource(MR.plurals.num_trackers, count = trackingCount, trackingCount)
             },
             icon = if (trackingCount == 0) Icons.Outlined.Sync else Icons.Outlined.Done,
-            color = if (trackingCount == 0) defaultActionButtonColor else MaterialTheme.colorScheme.primary,
+            color = if (trackingCount == 0) defaultActionButtonColor else tachiyomi.presentation.core.theme.primaryTextColor(),
             onClick = onTrackingClicked,
         )
         if (onWebViewClicked != null) {

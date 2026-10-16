@@ -115,6 +115,37 @@ class MangaDexService(
         }
     }
 
+    suspend fun viewChapters(
+        mangaId: String,
+        limit: Int = 20,
+        offset: Int = 0,
+        languages: List<String> = listOf("en")
+    ): ChapterListDto {
+        val url = MdApi.chapter.toHttpUrl()
+            .newBuilder()
+            .apply {
+                addQueryParameter("manga", mangaId)
+                addQueryParameter("limit", limit.toString())
+                addQueryParameter("offset", offset.toString())
+                addQueryParameter("includes[]", MdConstants.Types.scanlator)
+                addQueryParameter("order[chapter]", "desc")
+                languages.forEach { lang ->
+                    addQueryParameter("translatedLanguage[]", lang)
+                }
+            }
+            .build()
+
+        return with(MdUtil.jsonParser) {
+            client.newCall(
+                GET(
+                    url,
+                    headers = headers,
+                    cache = CacheControl.FORCE_NETWORK,
+                ),
+            ).awaitSuccess().parseAs()
+        }
+    }
+
     suspend fun viewManga(
         id: String,
     ): MangaDto {

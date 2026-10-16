@@ -1,19 +1,22 @@
 package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.NewReleases
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +29,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
@@ -149,7 +157,7 @@ data class BrowseSourceScreen(
             topBar = {
                 Column(
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surface)
+                        .background(MaterialTheme.colorScheme.background)
                         .pointerInput(Unit) {},
                 ) {
                     BrowseSourceToolbar(
@@ -168,71 +176,144 @@ data class BrowseSourceScreen(
                     Row(
                         modifier = Modifier
                             .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = MaterialTheme.padding.small),
-                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        FilterChip(
-                            selected = state.listing == Listing.Popular,
-                            onClick = {
-                                screenModel.resetFilters()
-                                screenModel.setListing(Listing.Popular)
-                            },
-                            leadingIcon = {
+                        val primaryColor = MaterialTheme.colorScheme.primary
+                        val outlineVariant = MaterialTheme.colorScheme.outlineVariant
+                        val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+                        val accentTextColor = tachiyomi.presentation.core.theme.primaryTextColor()
+
+                        val popularSelected = state.listing == Listing.Popular
+                        Box(
+                            modifier = Modifier
+                                .height(40.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (popularSelected) primaryColor.copy(alpha = 0.16f) else Color.Transparent,
+                                    CircleShape,
+                                )
+                                .border(
+                                    1.dp,
+                                    if (popularSelected) primaryColor else outlineVariant,
+                                    CircleShape,
+                                )
+                                .clickable {
+                                    screenModel.resetFilters()
+                                    screenModel.setListing(Listing.Popular)
+                                }
+                                .padding(horizontal = 16.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            ) {
                                 Icon(
                                     imageVector = Icons.Outlined.Favorite,
                                     contentDescription = null,
-                                    modifier = Modifier
-                                        .size(FilterChipDefaults.IconSize),
+                                    modifier = Modifier.size(18.dp),
+                                    tint = if (popularSelected) accentTextColor else onSurfaceVariant,
                                 )
-                            },
-                            label = {
-                                Text(text = stringResource(MR.strings.popular))
-                            },
-                        )
+                                Text(
+                                    text = stringResource(MR.strings.popular),
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = if (popularSelected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Medium,
+                                        fontSize = 13.sp,
+                                    ),
+                                    color = if (popularSelected) accentTextColor else onSurfaceVariant,
+                                )
+                            }
+                        }
+
                         if (screenModel.source.supportsLatest) {
-                            FilterChip(
-                                selected = state.listing == Listing.Latest,
-                                onClick = {
-                                    screenModel.resetFilters()
-                                    screenModel.setListing(Listing.Latest)
-                                },
-                                leadingIcon = {
+                            val latestSelected = state.listing == Listing.Latest
+                            Box(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (latestSelected) primaryColor.copy(alpha = 0.16f) else Color.Transparent,
+                                        CircleShape,
+                                    )
+                                    .border(
+                                        1.dp,
+                                        if (latestSelected) primaryColor else outlineVariant,
+                                        CircleShape,
+                                    )
+                                    .clickable {
+                                        screenModel.resetFilters()
+                                        screenModel.setListing(Listing.Latest)
+                                    }
+                                    .padding(horizontal = 16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
                                     Icon(
                                         imageVector = Icons.Outlined.NewReleases,
                                         contentDescription = null,
-                                        modifier = Modifier
-                                            .size(FilterChipDefaults.IconSize),
+                                        modifier = Modifier.size(18.dp),
+                                        tint = if (latestSelected) accentTextColor else onSurfaceVariant,
                                     )
-                                },
-                                label = {
-                                    Text(text = stringResource(MR.strings.latest))
-                                },
-                            )
+                                    Text(
+                                        text = stringResource(MR.strings.latest),
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = if (latestSelected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Medium,
+                                            fontSize = 13.sp,
+                                        ),
+                                        color = if (latestSelected) accentTextColor else onSurfaceVariant,
+                                    )
+                                }
+                            }
                         }
+
                         if (/* SY --> */ state.filterable /* SY <-- */) {
-                            FilterChip(
-                                selected = state.listing is Listing.Search,
-                                onClick = screenModel::openFilterSheet,
-                                leadingIcon = {
+                            val filterSelected = state.listing is Listing.Search
+                            Box(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (filterSelected) primaryColor.copy(alpha = 0.16f) else Color.Transparent,
+                                        CircleShape,
+                                    )
+                                    .border(
+                                        1.dp,
+                                        if (filterSelected) primaryColor else outlineVariant,
+                                        CircleShape,
+                                    )
+                                    .clickable { screenModel.openFilterSheet() }
+                                    .padding(horizontal = 16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
                                     Icon(
                                         imageVector = Icons.Outlined.FilterList,
                                         contentDescription = null,
-                                        modifier = Modifier
-                                            .size(FilterChipDefaults.IconSize),
+                                        modifier = Modifier.size(18.dp),
+                                        tint = if (filterSelected) accentTextColor else onSurfaceVariant,
                                     )
-                                },
-                                label = {
-                                    // SY -->
                                     Text(
                                         text = if (state.filters.isNotEmpty()) {
                                             stringResource(MR.strings.action_filter)
                                         } else {
                                             stringResource(MR.strings.action_search)
                                         },
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = if (filterSelected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Medium,
+                                            fontSize = 13.sp,
+                                        ),
+                                        color = if (filterSelected) accentTextColor else onSurfaceVariant,
                                     )
-                                    // SY <--
-                                },
-                            )
+                                }
+                            }
                         }
                     }
 

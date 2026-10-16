@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import tachiyomi.presentation.core.theme.secondaryTextColor
 
 @Composable
 fun PreferenceGroupHeader(title: String) {
@@ -20,7 +21,7 @@ fun PreferenceGroupHeader(title: String) {
     ) {
         Text(
             text = title,
-            color = MaterialTheme.colorScheme.secondary,
+            color = secondaryTextColor(),
             modifier = Modifier.padding(horizontal = PrefsHorizontalPadding),
             style = MaterialTheme.typography.bodyMedium,
         )

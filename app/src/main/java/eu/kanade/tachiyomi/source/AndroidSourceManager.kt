@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.source.online.all.Lanraragi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
+import eu.kanade.tachiyomi.source.online.all.StubMangaDexDelegate
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.source.online.english.EightMuses
 import eu.kanade.tachiyomi.source.online.english.HBrowse
@@ -23,6 +24,7 @@ import exh.source.EXH_SOURCE_ID
 import exh.source.EnhancedHttpSource
 import exh.source.ExhPreferences
 import exh.source.HBROWSE_SOURCE_ID
+import exh.source.MANGADEX_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
 import exh.source.PURURIN_SOURCE_ID
 import exh.source.TSUMINO_SOURCE_ID
@@ -102,6 +104,13 @@ class AndroidSourceManager(
                             put(EXH_SOURCE_ID, EHentai(EXH_SOURCE_ID, true, context))
                         }
                         put(MERGED_SOURCE_ID, MergedSource())
+                        put(
+                            MANGADEX_SOURCE_ID,
+                            MangaDex(
+                                delegate = StubMangaDexDelegate(MANGADEX_SOURCE_ID, "en", "MangaDex", "https://mangadex.org"),
+                                context = context,
+                            ),
+                        )
                         // SY <--
                     }
 

@@ -17,6 +17,7 @@
     <string name="action_filter_bookmarked">المحفوظة</string>
     <string name="action_filter_unread">غير مقروءة</string>
     <string name="action_filter_empty">إزالة الفرز</string>
+    <string name="label_home">الرئيسية</string>
     <string name="action_sort_alpha">أبجديًا</string>
     <string name="action_sort_total">عدد الفصول</string>
     <string name="action_sort_last_read">آخر ما قرأت</string>

@@ -160,7 +160,7 @@ fun DuplicateMangaDialog(
                 Text(
                     modifier = Modifier.padding(vertical = MaterialTheme.padding.extraSmall),
                     text = stringResource(MR.strings.action_cancel),
-                    color = MaterialTheme.colorScheme.primary,
+                    color = tachiyomi.presentation.core.theme.primaryTextColor(),
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }

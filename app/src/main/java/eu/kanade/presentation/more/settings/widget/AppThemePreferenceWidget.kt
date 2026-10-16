@@ -169,7 +169,7 @@ fun AppThemePreviewItem(
                     Icon(
                         imageVector = Icons.Filled.CheckCircle,
                         contentDescription = stringResource(MR.strings.selected),
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = tachiyomi.presentation.core.theme.primaryTextColor(),
                     )
                 }
             }

@@ -111,7 +111,7 @@ class SettingsSearchScreen : Screen() {
                                 lineLimits = TextFieldLineLimits.SingleLine,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                                 onKeyboardAction = { focusManager.clearFocus() },
-                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                cursorBrush = SolidColor(tachiyomi.presentation.core.theme.primaryTextColor()),
                                 decorator = {
                                     if (textFieldState.text.isEmpty()) {
                                         Text(

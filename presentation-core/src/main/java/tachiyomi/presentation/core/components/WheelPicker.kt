@@ -178,7 +178,7 @@ private fun <T> WheelPicker(
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
                     ),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                cursorBrush = SolidColor(tachiyomi.presentation.core.theme.primaryTextColor()),
             )
         } else {
             LazyColumn(

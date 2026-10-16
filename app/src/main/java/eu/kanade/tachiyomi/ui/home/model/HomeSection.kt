@@ -15,18 +15,22 @@ sealed interface HomeItem {
         override val title: String,
         override val thumbnailUrl: String?,
         val subtitle: String? = null,
+        val sourceId: Long? = null,
+        val sourceName: String? = null,
     ) : HomeItem
 
     data class ChapterCard(
         val sManga: SManga,
-        val mangaDexUuid: String,
-        val chapterId: String,
-        val chapterName: String,
+        val mangaDexUuid: String = "",
+        val chapterId: String = "",
+        val chapterName: String = "",
         val scanlator: String? = null,
         val date: String? = null,
         val language: String? = null,
         override val title: String,
         override val thumbnailUrl: String?,
+        val sourceId: Long? = null,
+        val sourceName: String? = null,
     ) : HomeItem
 
     data class HistoryCard(

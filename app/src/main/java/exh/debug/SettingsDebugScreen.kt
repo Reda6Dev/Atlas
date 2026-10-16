@@ -25,7 +25,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -57,6 +56,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.components.material.Switch
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.plus
@@ -128,7 +128,7 @@ class SettingsDebugScreen : Screen() {
                 item {
                     Text(
                         text = "Functions",
-                        color = MaterialTheme.colorScheme.primary,
+                        color = tachiyomi.presentation.core.theme.primaryTextColor(),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(16.dp),
                     )
@@ -157,7 +157,7 @@ class SettingsDebugScreen : Screen() {
                 item {
                     Text(
                         text = "Toggles",
-                        color = MaterialTheme.colorScheme.primary,
+                        color = tachiyomi.presentation.core.theme.primaryTextColor(),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(16.dp),
                     )

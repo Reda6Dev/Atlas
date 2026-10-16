@@ -130,7 +130,7 @@ fun TrackerSearch(
                             lineLimits = TextFieldLineLimits.SingleLine,
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             onKeyboardAction = { dispatchQueryAndClearFocus() },
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                            cursorBrush = SolidColor(tachiyomi.presentation.core.theme.primaryTextColor()),
                             decorator = {
                                 if (state.text.isEmpty()) {
                                     Text(
@@ -277,7 +277,7 @@ private fun SearchResultItem(
                 imageVector = Icons.Filled.CheckCircle,
                 contentDescription = null,
                 modifier = Modifier.align(Alignment.TopEnd),
-                tint = MaterialTheme.colorScheme.primary,
+                tint = tachiyomi.presentation.core.theme.primaryTextColor(),
             )
         }
         Column {

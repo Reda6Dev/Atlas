@@ -107,7 +107,7 @@ fun InfoScreen(
                 modifier = Modifier
                     .padding(bottom = MaterialTheme.padding.small)
                     .size(48.dp),
-                tint = MaterialTheme.colorScheme.primary,
+                tint = tachiyomi.presentation.core.theme.primaryTextColor(),
             )
             Text(
                 text = headingText,

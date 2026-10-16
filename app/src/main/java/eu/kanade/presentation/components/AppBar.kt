@@ -1,10 +1,22 @@
 package eu.kanade.presentation.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,6 +29,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
@@ -28,15 +42,17 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTooltipState
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -45,6 +61,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
@@ -64,6 +81,7 @@ fun AppBar(
 
     modifier: Modifier = Modifier,
     backgroundColor: Color? = null,
+    titleTextStyle: TextStyle? = null,
     // Text
     subtitle: String? = null,
     // Up button
@@ -89,7 +107,7 @@ fun AppBar(
             if (isActionMode) {
                 AppBarTitle(actionModeCounter.toString())
             } else {
-                AppBarTitle(title, subtitle = subtitle)
+                AppBarTitle(title, subtitle = subtitle, titleStyle = titleTextStyle)
             }
         },
         navigateUp = navigateUp,
@@ -126,34 +144,56 @@ fun AppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .padding(top = 22.dp),
     ) {
-        TopAppBar(
-            navigationIcon = {
-                if (isActionMode) {
-                    IconButton(onClick = onCancelActionMode) {
-                        Icon(
-                            imageVector = Icons.Outlined.Close,
-                            contentDescription = stringResource(MR.strings.action_cancel),
-                        )
-                    }
-                } else {
-                    navigateUp?.let {
-                        IconButton(onClick = it) {
-                            UpIcon(navigationIcon = navigationIcon)
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+            TopAppBar(
+                modifier = Modifier
+                    .height(52.dp)
+                    .padding(horizontal = 16.dp),
+                navigationIcon = {
+                    if (isActionMode) {
+                        IconButton(
+                            onClick = onCancelActionMode,
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Close,
+                                contentDescription = stringResource(MR.strings.action_cancel),
+                            )
+                        }
+                    } else {
+                        navigateUp?.let {
+                            IconButton(
+                                onClick = it,
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+                            ) {
+                                UpIcon(navigationIcon = navigationIcon)
+                            }
                         }
                     }
-                }
-            },
-            title = titleContent,
-            actions = actions,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = backgroundColor ?: MaterialTheme.colorScheme.surfaceColorAtElevation(
-                    elevation = if (isActionMode) 3.dp else 0.dp,
+                },
+                title = titleContent,
+                actions = actions,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background,
                 ),
-            ),
-            scrollBehavior = scrollBehavior,
-        )
+                scrollBehavior = scrollBehavior,
+            )
+        }
     }
 }
 
@@ -162,6 +202,7 @@ fun AppBarTitle(
     title: String?,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    titleStyle: TextStyle? = null,
 ) {
     Column(modifier = modifier) {
         title?.let {
@@ -169,6 +210,7 @@ fun AppBarTitle(
                 text = it,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                style = titleStyle ?: LocalTextStyle.current,
             )
         }
         subtitle?.let {
@@ -191,64 +233,81 @@ fun AppBarActions(
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
-    actions.filterIsInstance<AppBar.Action>().map {
-        TooltipBox(
-            positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-            tooltip = {
-                PlainTooltip {
-                    Text(it.title)
-                }
-            },
-            state = rememberTooltipState(),
-            focusable = false,
+    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(
-                onClick = it.onClick,
-                enabled = it.enabled,
-            ) {
-                Icon(
-                    imageVector = it.icon,
-                    tint = it.iconTint ?: LocalContentColor.current,
-                    contentDescription = it.title,
-                )
-            }
-        }
-    }
-
-    val overflowActions = actions.filterIsInstance<AppBar.OverflowAction>()
-    if (overflowActions.isNotEmpty()) {
-        TooltipBox(
-            positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-            tooltip = {
-                PlainTooltip {
-                    Text(stringResource(MR.strings.action_menu_overflow_description))
-                }
-            },
-            state = rememberTooltipState(),
-            focusable = false,
-        ) {
-            IconButton(
-                onClick = { showMenu = !showMenu },
-            ) {
-                Icon(
-                    Icons.Outlined.MoreVert,
-                    contentDescription = stringResource(MR.strings.action_menu_overflow_description),
-                )
-            }
-        }
-
-        DropdownMenu(
-            expanded = showMenu,
-            onDismissRequest = { showMenu = false },
-        ) {
-            overflowActions.map {
-                DropdownMenuItem(
-                    onClick = {
-                        it.onClick()
-                        showMenu = false
+            actions.filterIsInstance<AppBar.Action>().map {
+                TooltipBox(
+                    positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+                    tooltip = {
+                        PlainTooltip {
+                            Text(it.title)
+                        }
                     },
-                    text = { Text(it.title, fontWeight = FontWeight.Normal) },
-                )
+                    state = rememberTooltipState(),
+                    focusable = false,
+                ) {
+                    IconButton(
+                        onClick = it.onClick,
+                        enabled = it.enabled,
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+                    ) {
+                        Icon(
+                            imageVector = it.icon,
+                            tint = it.iconTint ?: LocalContentColor.current,
+                            contentDescription = it.title,
+                        )
+                    }
+                }
+            }
+
+            val overflowActions = actions.filterIsInstance<AppBar.OverflowAction>()
+            if (overflowActions.isNotEmpty()) {
+                TooltipBox(
+                    positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+                    tooltip = {
+                        PlainTooltip {
+                            Text(stringResource(MR.strings.action_menu_overflow_description))
+                        }
+                    },
+                    state = rememberTooltipState(),
+                    focusable = false,
+                ) {
+                    IconButton(
+                        onClick = { showMenu = !showMenu },
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+                    ) {
+                        Icon(
+                            Icons.Outlined.MoreVert,
+                            contentDescription = stringResource(MR.strings.action_menu_overflow_description),
+                        )
+                    }
+                }
+
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                ) {
+                    overflowActions.map {
+                        DropdownMenuItem(
+                            onClick = {
+                                it.onClick()
+                                showMenu = false
+                            },
+                            text = { Text(it.title, fontWeight = FontWeight.Normal) },
+                        )
+                    }
+                }
             }
         }
     }
@@ -340,58 +399,75 @@ fun SearchToolbar(
         },
         navigateUp = if (searchQuery == null) navigateUp else onClickCloseSearch,
         actions = {
-            key("search") {
-                val onClick = { onChangeSearchQuery("") }
+            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    key("search") {
+                        val onClick = { onChangeSearchQuery("") }
 
-                if (!searchEnabled) {
-                    // Don't show search action
-                } else if (searchQuery == null) {
-                    TooltipBox(
-                        positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-                        tooltip = {
-                            PlainTooltip {
-                                Text(stringResource(MR.strings.action_search))
+                        if (!searchEnabled) {
+                            // Don't show search action
+                        } else if (searchQuery == null) {
+                            TooltipBox(
+                                positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+                                tooltip = {
+                                    PlainTooltip {
+                                        Text(stringResource(MR.strings.action_search))
+                                    }
+                                },
+                                state = rememberTooltipState(),
+                                focusable = false,
+                            ) {
+                                IconButton(
+                                    onClick = onClick,
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Search,
+                                        contentDescription = stringResource(MR.strings.action_search),
+                                    )
+                                }
                             }
-                        },
-                        state = rememberTooltipState(),
-                        focusable = false,
-                    ) {
-                        IconButton(
-                            onClick = onClick,
-                        ) {
-                            Icon(
-                                Icons.Outlined.Search,
-                                contentDescription = stringResource(MR.strings.action_search),
-                            )
+                        } else if (searchQuery.isNotEmpty()) {
+                            TooltipBox(
+                                positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+                                tooltip = {
+                                    PlainTooltip {
+                                        Text(stringResource(MR.strings.action_reset))
+                                    }
+                                },
+                                state = rememberTooltipState(),
+                                focusable = false,
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        onClick()
+                                        focusRequester.requestFocus()
+                                    },
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Close,
+                                        contentDescription = stringResource(MR.strings.action_reset),
+                                    )
+                                }
+                            }
                         }
                     }
-                } else if (searchQuery.isNotEmpty()) {
-                    TooltipBox(
-                        positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-                        tooltip = {
-                            PlainTooltip {
-                                Text(stringResource(MR.strings.action_reset))
-                            }
-                        },
-                        state = rememberTooltipState(),
-                        focusable = false,
-                    ) {
-                        IconButton(
-                            onClick = {
-                                onClick()
-                                focusRequester.requestFocus()
-                            },
-                        ) {
-                            Icon(
-                                Icons.Outlined.Close,
-                                contentDescription = stringResource(MR.strings.action_reset),
-                            )
-                        }
-                    }
+
+                    key("actions") { actions() }
                 }
             }
-
-            key("actions") { actions() }
         },
         isActionMode = false,
         scrollBehavior = scrollBehavior,

@@ -3,49 +3,73 @@ package eu.kanade.tachiyomi.ui.home
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.tachiyomi.BuildConfig
-import eu.kanade.tachiyomi.network.NetworkHelper
-import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.home.model.HomeItem
-import eu.kanade.tachiyomi.ui.home.model.HomeSection
-import eu.kanade.tachiyomi.ui.home.model.HomeSectionType
-import exh.md.dto.ChapterDataDto
-import exh.md.dto.MangaDataDto
-import exh.md.service.MangaDexService
-import exh.md.utils.MdConstants
-import exh.md.utils.MdUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mihon.domain.manga.model.toDomainManga
-import okhttp3.Headers
 import tachiyomi.core.common.util.lang.launchIO
-import tachiyomi.domain.history.interactor.GetHistory
-import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.source.service.SourceManager
+import eu.kanade.domain.ui.UiPreferences
+import tachiyomi.domain.library.model.LibraryDisplayMode
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
+enum class HomeTabOption {
+    LatestChapters,
+    DiscoverManga,
+}
+
+data class HomeSourceFilter(
+    val id: Long?,
+    val name: String,
+)
+
+data class HomeSourceDialogItem(
+    val id: Long,
+    val name: String,
+    val isSelected: Boolean,
+)
+
 class HomeScreenModel(
-    private val networkHelper: NetworkHelper = Injekt.get(),
-    private val getHistory: GetHistory = Injekt.get(),
-    private val getLibraryManga: GetLibraryManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
-) : StateScreenModel<HomeScreenModel.State>(State()) {
+    private val uiPreferences: UiPreferences = Injekt.get(),
+) : StateScreenModel<HomeScreenModel.State>(
+    State(displayMode = uiPreferences.homeDisplayMode.get()),
+) {
 
     data class State(
-        val isLoading: Boolean = true,
+        val selectedTab: HomeTabOption = HomeTabOption.LatestChapters,
+        val selectedSourceId: Long? = null,
+        val availableSources: List<HomeSourceFilter> = emptyList(),
+        val displayMode: LibraryDisplayMode = LibraryDisplayMode.CompactGrid,
         val isRefreshing: Boolean = false,
-        val sections: List<HomeSection> = emptyList(),
-        val error: String? = null,
+        val showSourceSettingsDialog: Boolean = false,
+        val sourceDialogItems: List<HomeSourceDialogItem> = emptyList(),
+
+        // Latest Chapters Tab State
+        val latestChaptersItems: List<HomeItem> = emptyList(),
+        val latestChaptersPage: Int = 0,
+        val isLoadingLatest: Boolean = true,
+        val isLoadingMoreLatest: Boolean = false,
+        val hasMoreLatest: Boolean = true,
+        val latestError: String? = null,
+
+        // Discover Manga Tab State
+        val discoverItems: List<HomeItem> = emptyList(),
+        val discoverPage: Int = 0,
+        val isLoadingDiscover: Boolean = true,
+        val isLoadingMoreDiscover: Boolean = false,
+        val hasMoreDiscover: Boolean = true,
+        val discoverError: String? = null,
     )
 
     sealed interface Event {
@@ -56,13 +80,6 @@ class HomeScreenModel(
     private val _events: Channel<Event> = Channel(Channel.UNLIMITED)
     val events: Flow<Event> = _events.receiveAsFlow()
 
-    private val mangadexService by lazy {
-        val headers = Headers.Builder()
-            .add("User-Agent", "Atlas v${BuildConfig.VERSION_NAME} (${BuildConfig.APPLICATION_ID})")
-            .build()
-        MangaDexService(networkHelper.client, headers)
-    }
-
     private val mangaDexSourceId: Long by lazy {
         sourceManager.getOnlineSources().firstOrNull { it.id == exh.source.MANGADEX_SOURCE_ID }?.id
             ?: exh.source.MANGADEX_SOURCE_ID
@@ -72,227 +89,383 @@ class HomeScreenModel(
         loadData()
     }
 
+    fun selectTab(tab: HomeTabOption) {
+        mutableState.update { it.copy(selectedTab = tab) }
+    }
+
+    fun setDisplayMode(mode: LibraryDisplayMode) {
+        uiPreferences.homeDisplayMode.set(mode)
+        mutableState.update { it.copy(displayMode = mode) }
+    }
+
+    fun selectSource(sourceId: Long?) {
+        if (state.value.selectedSourceId == sourceId && state.value.availableSources.isNotEmpty()) return
+        mutableState.update {
+            it.copy(
+                selectedSourceId = sourceId,
+                latestChaptersPage = 0,
+                discoverPage = 0,
+                hasMoreLatest = true,
+                hasMoreDiscover = true,
+                latestChaptersItems = emptyList(),
+                discoverItems = emptyList(),
+                isLoadingLatest = true,
+                isLoadingDiscover = true,
+                latestError = null,
+                discoverError = null,
+            )
+        }
+        loadData()
+    }
+
+    fun openSourceSettingsDialog() {
+        val enabledLangs = sourcePreferences.enabledLanguages.get()
+        val disabledIds = sourcePreferences.disabledSources.get()
+        val homeSelectedSourceIds = sourcePreferences.homeSources.get()
+
+        val allAvailableSources = sourceManager.getVisibleOnlineSources()
+            .filterIsInstance<CatalogueSource>()
+            .filter { it.lang in enabledLangs || "all" in enabledLangs }
+            .filterNot { it.id.toString() in disabledIds }
+            .ifEmpty {
+                sourceManager.getOnlineSources().filterIsInstance<CatalogueSource>()
+            }
+
+        val dialogItems = allAvailableSources.map { source ->
+            val isSelected = if (homeSelectedSourceIds.isEmpty()) {
+                true
+            } else if (homeSelectedSourceIds.contains("NONE")) {
+                false
+            } else {
+                source.id.toString() in homeSelectedSourceIds
+            }
+            HomeSourceDialogItem(
+                id = source.id,
+                name = source.name,
+                isSelected = isSelected,
+            )
+        }
+
+        mutableState.update {
+            it.copy(
+                showSourceSettingsDialog = true,
+                sourceDialogItems = dialogItems,
+            )
+        }
+    }
+
+    fun toggleDialogSourceSelection(sourceId: Long) {
+        mutableState.update { state ->
+            val updatedItems = state.sourceDialogItems.map { item ->
+                if (item.id == sourceId) item.copy(isSelected = !item.isSelected) else item
+            }
+            state.copy(sourceDialogItems = updatedItems)
+        }
+    }
+
+    fun saveSourceSettingsDialog() {
+        val selectedIds = state.value.sourceDialogItems
+            .filter { it.isSelected }
+            .map { it.id.toString() }
+            .toSet()
+
+        val toSave = if (selectedIds.isEmpty()) setOf("NONE") else selectedIds
+        sourcePreferences.homeSources.set(toSave)
+
+        mutableState.update {
+            it.copy(
+                showSourceSettingsDialog = false,
+                selectedSourceId = null,
+                latestChaptersPage = 0,
+                discoverPage = 0,
+                hasMoreLatest = true,
+                hasMoreDiscover = true,
+                latestChaptersItems = emptyList(),
+                discoverItems = emptyList(),
+                isLoadingLatest = true,
+                isLoadingDiscover = true,
+            )
+        }
+        loadData()
+    }
+
+    fun dismissSourceSettingsDialog() {
+        mutableState.update { it.copy(showSourceSettingsDialog = false) }
+    }
+
     fun refresh() {
-        mutableState.update { it.copy(isRefreshing = true, error = null) }
+        if (state.value.isRefreshing) return
+        mutableState.update {
+            it.copy(
+                isRefreshing = true,
+                latestError = null,
+                discoverError = null,
+                latestChaptersPage = 0,
+                discoverPage = 0,
+                hasMoreLatest = true,
+                hasMoreDiscover = true,
+                latestChaptersItems = emptyList(),
+                discoverItems = emptyList(),
+                isLoadingLatest = true,
+                isLoadingDiscover = true,
+            )
+        }
         loadData()
     }
 
     private fun loadData() {
         screenModelScope.launchIO {
-            var networkErrorMessage: String? = null
+            loadLatestChapters(0)
+            loadDiscoverManga(0)
+            mutableState.update { it.copy(isRefreshing = false) }
+        }
+    }
 
-            // 1. Load Local Recently Read Section
-            val historySection = runCatching { loadRecentlyReadSection() }.getOrNull()
+    private fun getActiveSources(): List<CatalogueSource> {
+        val enabledLangs = sourcePreferences.enabledLanguages.get()
+        val disabledIds = sourcePreferences.disabledSources.get()
+        val homeSelectedSourceIds = sourcePreferences.homeSources.get()
 
-            // 2. Load Local Library Section
-            val librarySection = runCatching { loadLibrarySection() }.getOrNull()
+        val onlineSources = sourceManager.getVisibleOnlineSources()
+            .filterIsInstance<CatalogueSource>()
+            .filter { it.lang in enabledLangs || "all" in enabledLangs }
+            .filterNot { it.id.toString() in disabledIds }
 
-            // 3. Load MangaDex Latest Chapters Section
-            val latestChaptersSection = runCatching { loadLatestChaptersSection() }
-                .onFailure { networkErrorMessage = it.localizedMessage ?: "Failed to load latest chapters" }
-                .getOrNull()
-
-            // 4. Load MangaDex Discover Section
-            val discoverSection = runCatching { loadDiscoverSection() }
-                .onFailure {
-                    if (networkErrorMessage == null) {
-                        networkErrorMessage = it.localizedMessage ?: "Failed to load discover manga"
-                    }
+        val baseSources = if (onlineSources.isNotEmpty()) {
+            onlineSources
+        } else {
+            sourceManager.getOnlineSources()
+                .filterIsInstance<CatalogueSource>()
+                .ifEmpty {
+                    listOfNotNull(sourceManager.get(exh.source.MANGADEX_SOURCE_ID) as? CatalogueSource)
                 }
-                .getOrNull()
+        }
 
-            val sections = listOfNotNull(
-                latestChaptersSection,
-                discoverSection,
-                historySection,
-                librarySection,
-            )
+        return when {
+            homeSelectedSourceIds.isEmpty() -> baseSources
+            homeSelectedSourceIds.contains("NONE") -> emptyList()
+            else -> baseSources.filter { it.id.toString() in homeSelectedSourceIds }
+        }
+    }
+
+    fun loadMoreLatestChapters() {
+        val currentState = state.value
+        if (currentState.isLoadingLatest || currentState.isLoadingMoreLatest || !currentState.hasMoreLatest) return
+        screenModelScope.launchIO {
+            loadLatestChapters(currentState.latestChaptersPage + 1)
+        }
+    }
+
+    fun loadMoreDiscover() {
+        val currentState = state.value
+        if (currentState.isLoadingDiscover || currentState.isLoadingMoreDiscover || !currentState.hasMoreDiscover) return
+        screenModelScope.launchIO {
+            loadDiscoverManga(currentState.discoverPage + 1)
+        }
+    }
+
+    private suspend fun loadLatestChapters(page: Int) {
+        if (page > 0) {
+            mutableState.update { it.copy(isLoadingMoreLatest = true) }
+        }
+
+        val allSources = getActiveSources()
+        val availableFilterList = listOf(HomeSourceFilter(null, "الكل")) + allSources.map { HomeSourceFilter(it.id, it.name) }
+
+        val selectedId = state.value.selectedSourceId
+        val targetSources = if (selectedId != null) {
+            allSources.filter { it.id == selectedId }
+        } else {
+            allSources
+        }
+
+        if (targetSources.isEmpty()) {
+            mutableState.update {
+                it.copy(
+                    availableSources = availableFilterList,
+                    isLoadingLatest = false,
+                    isLoadingMoreLatest = false,
+                    latestError = if (allSources.isEmpty()) "لا توجد مصادر مفعلة للشاشة الرئيسية." else "تعذر التوصل لمحتوى من المصدر المالي.",
+                )
+            }
+            return
+        }
+
+        val combinedItems = mutableListOf<HomeItem>()
+        var anySuccess = false
+        var lastException: Throwable? = null
+        var hasNextPageAny = false
+
+        for (source in targetSources) {
+            val result = runCatching {
+                val mangasPage = source.getLatestUpdates(page + 1)
+                val items = mangasPage.mangas.map { sManga ->
+                    HomeItem.MangaCard(
+                        sManga = sManga,
+                        title = sManga.title,
+                        thumbnailUrl = sManga.thumbnail_url,
+                        subtitle = null,
+                        sourceId = source.id,
+                        sourceName = source.name,
+                    )
+                }
+                Pair(items, mangasPage.hasNextPage)
+            }
+
+            if (result.isSuccess) {
+                val (items, hasNext) = result.getOrThrow()
+                combinedItems.addAll(items)
+                if (hasNext) hasNextPageAny = true
+                anySuccess = true
+            } else {
+                lastException = result.exceptionOrNull()
+            }
+        }
+
+        if (anySuccess) {
+            val currentItems = state.value.latestChaptersItems
+            val existingKeys = currentItems.map { getItemKey(it) }.toSet()
+            val uniqueNewItems = combinedItems.filter { getItemKey(it) !in existingKeys }
+            val allItems = if (page == 0) combinedItems.distinctBy { getItemKey(it) } else currentItems + uniqueNewItems
 
             mutableState.update {
                 it.copy(
-                    isLoading = false,
-                    isRefreshing = false,
-                    sections = sections,
-                    error = if (sections.isEmpty()) networkErrorMessage ?: "No data available" else null,
+                    availableSources = availableFilterList,
+                    isLoadingLatest = false,
+                    isLoadingMoreLatest = false,
+                    latestChaptersItems = allItems,
+                    latestChaptersPage = page,
+                    hasMoreLatest = hasNextPageAny && combinedItems.isNotEmpty(),
+                    latestError = null,
                 )
             }
-        }
-    }
-
-    private suspend fun loadRecentlyReadSection(): HomeSection? {
-        val historyItems = getHistory.subscribe("")
-            .firstOrNull()
-            ?.take(10) // Fixed to use take on Flow result directly or list
-            ?.map { history ->
-                val chapterText = if (history.chapterNumber >= 0) "Ch. ${history.chapterNumber.toInt()}" else null
-                HomeItem.HistoryCard(
-                    localMangaId = history.mangaId,
-                    title = history.title,
-                    thumbnailUrl = history.coverData.url ?: history.coverData.ogUrl,
-                    chapterName = chapterText,
-                )
-            }
-            .orEmpty()
-
-        if (historyItems.isEmpty()) return null
-
-        return HomeSection(
-            id = "recently_read",
-            title = "Recently Read",
-            type = HomeSectionType.RecentlyRead,
-            items = historyItems,
-        )
-    }
-
-    private suspend fun loadLibrarySection(): HomeSection? {
-        val libraryMangaList = getLibraryManga.await()
-            .take(12)
-            .map { libraryManga ->
-                HomeItem.MangaCard(
-                    domainManga = libraryManga.manga,
-                    localMangaId = libraryManga.manga.id,
-                    title = libraryManga.manga.title,
-                    thumbnailUrl = libraryManga.manga.thumbnailUrl,
-                )
-            }
-
-        if (libraryMangaList.isEmpty()) return null
-
-        return HomeSection(
-            id = "my_library",
-            title = "My Library",
-            type = HomeSectionType.MyLibrary,
-            items = libraryMangaList,
-        )
-    }
-
-    private suspend fun loadDiscoverSection(): HomeSection {
-        val popularDto = mangadexService.fetchPopularManga(limit = 15, offset = 0)
-        val items = popularDto.data.map { dto ->
-            val title = MdUtil.getTitleFromManga(dto.attributes, "en", true)
-            val coverFileName = dto.relationships
-                .firstOrNull { it.type == MdConstants.Types.coverArt }
-                ?.attributes?.fileName
-
-            val thumbnailUrl = coverFileName?.let { fileName ->
-                "${MdUtil.cdnCoverUrl(dto.id, fileName)}.512.jpg"
-            }
-
-            val sManga = SManga(
-                url = "/manga/${dto.id}",
-                title = title,
-                thumbnail_url = thumbnailUrl,
-            )
-
-            HomeItem.MangaCard(
-                sManga = sManga,
-                mangaDexUuid = dto.id,
-                title = title,
-                thumbnailUrl = thumbnailUrl,
-                subtitle = dto.attributes.status?.replaceFirstChar { it.uppercase() },
-            )
-        }
-
-        return HomeSection(
-            id = "discover_manga",
-            title = "Discover Manga",
-            type = HomeSectionType.DiscoverManga,
-            items = items,
-        )
-    }
-
-    private suspend fun loadLatestChaptersSection(): HomeSection {
-        val latestChaptersDto = mangadexService.fetchLatestChapters(
-            limit = 15,
-            offset = 0,
-            languages = listOf("en", "ar"),
-        )
-
-        val chapterList = latestChaptersDto.data
-
-        // Collect unique Manga IDs from chapter relationships
-        val mangaIds = chapterList.mapNotNull { ch ->
-            ch.relationships.firstOrNull { it.type == MdConstants.Types.manga }?.id
-        }.distinct()
-
-        // Batch fetch Manga info and Covers
-        val mangaDetailsMap = if (mangaIds.isNotEmpty()) {
-            runCatching {
-                mangadexService.viewMangas(mangaIds).data.associateBy { it.id }
-            }.getOrDefault(emptyMap())
         } else {
-            emptyMap()
+            mutableState.update {
+                it.copy(
+                    availableSources = availableFilterList,
+                    isLoadingLatest = false,
+                    isLoadingMoreLatest = false,
+                    latestError = lastException?.localizedMessage ?: "تعذر تحميل البيانات من المصادر المتاحة.",
+                )
+            }
+        }
+    }
+
+    private suspend fun loadDiscoverManga(page: Int) {
+        if (page > 0) {
+            mutableState.update { it.copy(isLoadingMoreDiscover = true) }
         }
 
-        val items = chapterList.mapNotNull { chDto ->
-            val mangaId = chDto.relationships.firstOrNull { it.type == MdConstants.Types.manga }?.id
-                ?: return@mapNotNull null
-            val mangaDto = mangaDetailsMap[mangaId]
+        val allSources = getActiveSources()
+        val availableFilterList = listOf(HomeSourceFilter(null, "الكل")) + allSources.map { HomeSourceFilter(it.id, it.name) }
 
-            val mangaTitle = mangaDto?.let { MdUtil.getTitleFromManga(it.attributes, "en", true) }
-                ?: "Manga"
-
-            val coverFileName = mangaDto?.relationships
-                ?.firstOrNull { it.type == MdConstants.Types.coverArt }
-                ?.attributes?.fileName
-
-            val thumbnailUrl = coverFileName?.let { fileName ->
-                "${MdUtil.cdnCoverUrl(mangaId, fileName)}.512.jpg"
-            }
-
-            val chapterNum = chDto.attributes.chapter
-            val chapterTitleText = chDto.attributes.title
-            val chapterName = when {
-                !chapterNum.isNullOrBlank() && !chapterTitleText.isNullOrBlank() -> "Ch. $chapterNum - $chapterTitleText"
-                !chapterNum.isNullOrBlank() -> "Ch. $chapterNum"
-                !chapterTitleText.isNullOrBlank() -> chapterTitleText
-                else -> "Chapter"
-            }
-
-            val scanlator = chDto.relationships
-                .firstOrNull { it.type == MdConstants.Types.scanlator }
-                ?.attributes?.name
-
-            val sManga = SManga(
-                url = "/manga/$mangaId",
-                title = mangaTitle,
-                thumbnail_url = thumbnailUrl,
-            )
-
-            HomeItem.ChapterCard(
-                sManga = sManga,
-                mangaDexUuid = mangaId,
-                chapterId = chDto.id,
-                chapterName = chapterName,
-                scanlator = scanlator,
-                language = chDto.attributes.translatedLanguage,
-                title = mangaTitle,
-                thumbnailUrl = thumbnailUrl,
-            )
+        val selectedId = state.value.selectedSourceId
+        val targetSources = if (selectedId != null) {
+            allSources.filter { it.id == selectedId }
+        } else {
+            allSources
         }
 
-        return HomeSection(
-            id = "latest_chapters",
-            title = "Latest Chapters",
-            type = HomeSectionType.LatestChapters,
-            items = items,
-        )
+        if (targetSources.isEmpty()) {
+            mutableState.update {
+                it.copy(
+                    availableSources = availableFilterList,
+                    isLoadingDiscover = false,
+                    isLoadingMoreDiscover = false,
+                    discoverError = if (allSources.isEmpty()) "لا توجد مصادر مفعلة للشاشة الرئيسية." else "تعذر التوصل لمحتوى من المصدر المالي.",
+                )
+            }
+            return
+        }
+
+        val combinedItems = mutableListOf<HomeItem>()
+        var anySuccess = false
+        var lastException: Throwable? = null
+        var hasNextPageAny = false
+
+        for (source in targetSources) {
+            val result = runCatching {
+                val mangasPage = source.getPopularManga(page + 1)
+                val items = mangasPage.mangas.map { sManga ->
+                    HomeItem.MangaCard(
+                        sManga = sManga,
+                        title = sManga.title,
+                        thumbnailUrl = sManga.thumbnail_url,
+                        subtitle = null,
+                        sourceId = source.id,
+                        sourceName = source.name,
+                    )
+                }
+                Pair(items, mangasPage.hasNextPage)
+            }
+
+            if (result.isSuccess) {
+                val (items, hasNext) = result.getOrThrow()
+                combinedItems.addAll(items)
+                if (hasNext) hasNextPageAny = true
+                anySuccess = true
+            } else {
+                lastException = result.exceptionOrNull()
+            }
+        }
+
+        if (anySuccess) {
+            val currentItems = state.value.discoverItems
+            val existingKeys = currentItems.map { getItemKey(it) }.toSet()
+            val uniqueNewItems = combinedItems.filter { getItemKey(it) !in existingKeys }
+            val allItems = if (page == 0) combinedItems.distinctBy { getItemKey(it) } else currentItems + uniqueNewItems
+
+            mutableState.update {
+                it.copy(
+                    availableSources = availableFilterList,
+                    isLoadingDiscover = false,
+                    isLoadingMoreDiscover = false,
+                    discoverItems = allItems,
+                    discoverPage = page,
+                    hasMoreDiscover = hasNextPageAny && combinedItems.isNotEmpty(),
+                    discoverError = null,
+                )
+            }
+        } else {
+            mutableState.update {
+                it.copy(
+                    availableSources = availableFilterList,
+                    isLoadingDiscover = false,
+                    isLoadingMoreDiscover = false,
+                    discoverError = lastException?.localizedMessage ?: "تعذر تحميل البيانات من المصادر المتاحة.",
+                )
+            }
+        }
+    }
+
+    private fun getItemKey(item: HomeItem): String {
+        return when (item) {
+            is HomeItem.MangaCard -> "${item.sourceId}_${item.sManga?.url ?: item.mangaDexUuid ?: item.localMangaId.toString()}"
+            is HomeItem.ChapterCard -> "${item.sourceId}_${item.chapterId.ifBlank { item.sManga.url }}"
+            is HomeItem.HistoryCard -> item.localMangaId.toString()
+        }
     }
 
     fun onItemClick(item: HomeItem) {
         screenModelScope.launch {
+            val targetSourceId = when (item) {
+                is HomeItem.MangaCard -> item.sourceId
+                is HomeItem.ChapterCard -> item.sourceId
+                is HomeItem.HistoryCard -> null
+            } ?: mangaDexSourceId
+
             val localMangaId = when (item) {
                 is HomeItem.HistoryCard -> item.localMangaId
                 is HomeItem.MangaCard -> {
                     item.localMangaId ?: item.sManga?.let { sManga ->
                         withContext(Dispatchers.IO) {
-                            networkToLocalManga(sManga.toDomainManga(mangaDexSourceId)).id
+                            networkToLocalManga(sManga.toDomainManga(targetSourceId)).id
                         }
                     }
                 }
                 is HomeItem.ChapterCard -> {
                     withContext(Dispatchers.IO) {
-                        networkToLocalManga(item.sManga.toDomainManga(mangaDexSourceId)).id
+                        networkToLocalManga(item.sManga.toDomainManga(targetSourceId)).id
                     }
                 }
             }

@@ -127,7 +127,7 @@ private fun BoxScope.CoverTextOverlay(
 ) {
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp))
+            .clip(RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp))
             .background(
                 Brush.verticalGradient(
                     0f to Color.Transparent,

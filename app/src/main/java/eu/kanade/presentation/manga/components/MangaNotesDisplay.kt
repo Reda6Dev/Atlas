@@ -27,7 +27,7 @@ fun MangaNotesDisplay(
     var contentUpdatedOnce by remember { mutableStateOf(false) }
 
     val richTextState = rememberRichTextState()
-    val primaryColor = MaterialTheme.colorScheme.primary
+    val primaryColor = tachiyomi.presentation.core.theme.primaryTextColor()
     LaunchedEffect(content) {
         richTextState.setMarkdown(content)
 

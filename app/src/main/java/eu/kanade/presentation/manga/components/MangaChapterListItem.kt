@@ -117,7 +117,7 @@ fun MangaChapterListItem(
                             modifier = Modifier
                                 .height(8.dp)
                                 .padding(end = 4.dp),
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = tachiyomi.presentation.core.theme.primaryTextColor(),
                         )
                     }
                     if (bookmark) {
@@ -126,7 +126,7 @@ fun MangaChapterListItem(
                             contentDescription = stringResource(MR.strings.action_filter_bookmarked),
                             modifier = Modifier
                                 .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = tachiyomi.presentation.core.theme.primaryTextColor(),
                         )
                     }
                     Text(

@@ -53,15 +53,15 @@ internal object TachiyomiColorScheme : BaseColorScheme() {
     )
 
     override val lightScheme = lightColorScheme(
-        primary = Color(0xFF0058CA),
+        primary = Color(0xFF021858),
         onPrimary = Color(0xFFFFFFFF),
         primaryContainer = Color(0xFFD9E2FF),
-        onPrimaryContainer = Color(0xFF001945),
+        onPrimaryContainer = Color(0xFF021858),
         inversePrimary = Color(0xFFB0C6FF),
-        secondary = Color(0xFF0058CA), // Unread badge
+        secondary = Color(0xFF021858), // Unread badge
         onSecondary = Color(0xFFFFFFFF), // Unread badge text
         secondaryContainer = Color(0xFFD9E2FF), // Navigation bar selector pill & progress indicator (remaining)
-        onSecondaryContainer = Color(0xFF001945), // Navigation bar selector icon
+        onSecondaryContainer = Color(0xFF021858), // Navigation bar selector icon
         tertiary = Color(0xFF006E1B), // Downloaded badge
         onTertiary = Color(0xFFFFFFFF), // Downloaded badge text
         tertiaryContainer = Color(0xFF95F990),

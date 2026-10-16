@@ -100,7 +100,7 @@ fun <T> TriStateListDialog(
                                     tint = if (state == State.UNCHECKED) {
                                         LocalContentColor.current
                                     } else {
-                                        MaterialTheme.colorScheme.primary
+                                        tachiyomi.presentation.core.theme.primaryTextColor()
                                     },
                                     contentDescription = stringResource(
                                         when (state) {

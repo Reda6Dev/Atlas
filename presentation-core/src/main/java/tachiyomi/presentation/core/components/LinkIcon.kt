@@ -24,7 +24,7 @@ fun LinkIcon(
     ) {
         Icon(
             imageVector = icon,
-            tint = MaterialTheme.colorScheme.primary,
+            tint = tachiyomi.presentation.core.theme.primaryTextColor(),
             contentDescription = label,
         )
     }

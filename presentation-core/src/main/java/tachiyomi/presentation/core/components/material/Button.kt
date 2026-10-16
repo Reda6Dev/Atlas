@@ -58,7 +58,7 @@ fun TextButton(
     border: BorderStroke? = null,
     colors: ButtonColors = ButtonColors(
         containerColor = Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.primary,
+        contentColor = tachiyomi.presentation.core.theme.primaryTextColor(),
         disabledContainerColor = Color.Transparent,
         disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = DISABLED_ALPHA),
     ),

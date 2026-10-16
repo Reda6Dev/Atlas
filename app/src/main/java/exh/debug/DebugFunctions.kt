@@ -300,12 +300,6 @@ object DebugFunctions {
         runBlocking { database.ehQueries.resetReaderViewerForAllManga() }
     }
 
-    fun migrateLangNhentaiToMultiLangSource() {
-        val sources = nHentaiSourceIds - NHentai.otherId
-
-        runBlocking { database.ehQueries.migrateAllNhentaiToOtherLang(NHentai.otherId, sources) }
-    }
-
     fun exportProtobufScheme() = ProtoBufSchemaGenerator.generateSchemaText(Backup.serializer().descriptor)
 
     fun killSyncJobs() {

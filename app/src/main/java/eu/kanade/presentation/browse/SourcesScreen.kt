@@ -151,7 +151,7 @@ private fun SourceItem(
                     Text(
                         text = stringResource(MR.strings.latest),
                         style = LocalTextStyle.current.copy(
-                            color = MaterialTheme.colorScheme.primary,
+                            color = tachiyomi.presentation.core.theme.primaryTextColor(),
                         ),
                     )
                 }
@@ -175,7 +175,7 @@ private fun SourcePinButton(
 ) {
     val icon = if (isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin
     val tint = if (isPinned) {
-        MaterialTheme.colorScheme.primary
+        tachiyomi.presentation.core.theme.primaryTextColor()
     } else {
         MaterialTheme.colorScheme.onBackground.copy(
             alpha = SECONDARY_ALPHA,

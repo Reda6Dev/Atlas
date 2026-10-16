@@ -201,7 +201,7 @@ private fun UpdatesUiItem(
                         modifier = Modifier
                             .height(8.dp)
                             .padding(end = 4.dp),
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = tachiyomi.presentation.core.theme.primaryTextColor(),
                     )
                 }
                 if (update.bookmark) {
@@ -210,7 +210,7 @@ private fun UpdatesUiItem(
                         contentDescription = stringResource(MR.strings.action_filter_bookmarked),
                         modifier = Modifier
                             .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = tachiyomi.presentation.core.theme.primaryTextColor(),
                     )
                     Spacer(modifier = Modifier.width(2.dp))
                 }

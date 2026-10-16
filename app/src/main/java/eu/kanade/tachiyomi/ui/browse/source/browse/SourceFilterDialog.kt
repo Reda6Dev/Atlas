@@ -66,7 +66,7 @@ fun SourceFilterDialog(
                         Text(
                             text = stringResource(MR.strings.action_reset),
                             style = LocalTextStyle.current.copy(
-                                color = MaterialTheme.colorScheme.primary,
+                                color = tachiyomi.presentation.core.theme.primaryTextColor(),
                             ),
                         )
                     }
