@@ -25,9 +25,22 @@ object BlacklistedSources {
 
     val BLACKLISTED_EXTENSIONS = arrayOf(
         "eu.kanade.tachiyomi.extension.all.ehentai",
+        "eu.kanade.tachiyomi.extension.all.mangadex",
+        "eu.kanade.tachiyomi.extension.all.nhentai",
+        "eu.kanade.tachiyomi.extension.en.pururin",
+        "eu.kanade.tachiyomi.extension.en.tsumino",
+        "eu.kanade.tachiyomi.extension.en.hbrowse",
+        "eu.kanade.tachiyomi.extension.en.eightmuses",
     )
 
     var HIDDEN_SOURCES = setOf(
         MERGED_SOURCE_ID,
+        MANGADEX_SOURCE_ID,
+        EH_SOURCE_ID,
+        EXH_SOURCE_ID,
+        PURURIN_SOURCE_ID,
+        TSUMINO_SOURCE_ID,
+        HBROWSE_SOURCE_ID,
+        EIGHTMUSES_SOURCE_ID,
     )
 }
