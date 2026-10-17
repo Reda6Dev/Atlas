@@ -18,7 +18,7 @@ import uy.kohesive.injekt.api.get
 
 class MdMangaScreenModel(
     val mangaId: String,
-    private val networkHelper: NetworkHelper = Injekt.get()
+    private val networkHelper: NetworkHelper = Injekt.get(),
 ) : StateScreenModel<MdMangaScreenModel.State>(State()) {
 
     data class State(
@@ -29,7 +29,7 @@ class MdMangaScreenModel(
         val error: String? = null,
         val chaptersLoading: Boolean = true,
         val page: Int = 0,
-        val hasMore: Boolean = true
+        val hasMore: Boolean = true,
     )
 
     private val mangadexService by lazy {
@@ -75,7 +75,7 @@ class MdMangaScreenModel(
                     mangaId = mangaId,
                     limit = 20,
                     offset = page * 20,
-                    languages = listOf("en", "ar")
+                    languages = listOf("en", "ar"),
                 )
             }.onSuccess { response ->
                 val newChapters = response.data
@@ -88,7 +88,7 @@ class MdMangaScreenModel(
                         chaptersLoading = false,
                         chapters = allChapters,
                         page = page,
-                        hasMore = hasMore
+                        hasMore = hasMore,
                     )
                 }
             }.onFailure { e ->

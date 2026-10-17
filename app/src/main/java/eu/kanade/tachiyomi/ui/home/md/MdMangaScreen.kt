@@ -58,9 +58,9 @@ class MdMangaScreen(private val mangaId: String) : Screen {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                         }
-                    }
+                    },
                 )
-            }
+            },
         ) { paddingValues ->
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                 if (state.isLoading) {
@@ -75,7 +75,7 @@ class MdMangaScreen(private val mangaId: String) : Screen {
                             Text(
                                 text = "الفصول",
                                 style = MaterialTheme.typography.titleLarge,
-                                modifier = Modifier.padding(16.dp)
+                                modifier = Modifier.padding(16.dp),
                             )
                         }
 
@@ -98,7 +98,7 @@ class MdMangaScreen(private val mangaId: String) : Screen {
                                         .fillMaxWidth()
                                         .clickable { screenModel.loadMoreChapters() }
                                         .padding(16.dp),
-                                    contentAlignment = Alignment.Center
+                                    contentAlignment = Alignment.Center,
                                 ) {
                                     Text(text = "تحميل المزيد", color = tachiyomi.presentation.core.theme.primaryTextColor())
                                 }
@@ -143,7 +143,7 @@ class MdMangaScreen(private val mangaId: String) : Screen {
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onClick() }
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
             Column {
                 Text(text = displayText, style = MaterialTheme.typography.bodyLarge)
@@ -151,7 +151,7 @@ class MdMangaScreen(private val mangaId: String) : Screen {
                 Text(
                     text = "اللغة: ${chapter.attributes.translatedLanguage}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

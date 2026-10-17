@@ -9,8 +9,8 @@ import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.source.online.all.Lanraragi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import eu.kanade.tachiyomi.source.online.all.StubMangaDexDelegate
 import eu.kanade.tachiyomi.source.online.all.NHentai
+import eu.kanade.tachiyomi.source.online.all.StubMangaDexDelegate
 import eu.kanade.tachiyomi.source.online.english.EightMuses
 import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.Pururin

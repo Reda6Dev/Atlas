@@ -32,7 +32,7 @@ class MdSectionScreenModel(
         val items: List<HomeItem> = emptyList(),
         val page: Int = 0,
         val hasMore: Boolean = true,
-        val error: String? = null
+        val error: String? = null,
     )
 
     private val mangadexService by lazy {
@@ -109,7 +109,7 @@ class MdSectionScreenModel(
                         items = allItems,
                         page = page,
                         hasMore = hasMore,
-                        error = null
+                        error = null,
                     )
                 }
             }.onFailure { e ->
@@ -118,7 +118,7 @@ class MdSectionScreenModel(
                         isLoading = false,
                         isRefreshing = false,
                         isLoadingMore = false,
-                        error = e.localizedMessage ?: "حدث خطأ أثناء تحميل البيانات"
+                        error = e.localizedMessage ?: "حدث خطأ أثناء تحميل البيانات",
                     )
                 }
             }

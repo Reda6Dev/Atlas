@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.home
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.home.model.HomeItem
 import kotlinx.coroutines.Dispatchers
@@ -14,10 +15,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mihon.domain.manga.model.toDomainManga
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.source.service.SourceManager
-import eu.kanade.domain.ui.UiPreferences
-import tachiyomi.domain.library.model.LibraryDisplayMode
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

@@ -31,7 +31,8 @@ class ExtensionInstallerPreference(
     private fun check(value: ExtensionInstaller): ExtensionInstaller {
         when (value) {
             ExtensionInstaller.PACKAGEINSTALLER,
-            ExtensionInstaller.LEGACY -> {
+            ExtensionInstaller.LEGACY,
+            -> {
                 return ExtensionInstaller.PRIVATE
             }
             ExtensionInstaller.SHIZUKU -> {

@@ -11,8 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.AppTheme
-import eu.kanade.presentation.theme.colorscheme.BaseColorScheme
 import eu.kanade.presentation.theme.colorscheme.AtlasColorScheme
+import eu.kanade.presentation.theme.colorscheme.BaseColorScheme
 import eu.kanade.presentation.theme.colorscheme.CatppuccinColorScheme
 import eu.kanade.presentation.theme.colorscheme.GreenAppleColorScheme
 import eu.kanade.presentation.theme.colorscheme.LavenderColorScheme

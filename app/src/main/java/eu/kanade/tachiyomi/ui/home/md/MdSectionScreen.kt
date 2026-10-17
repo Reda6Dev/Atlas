@@ -85,14 +85,14 @@ class MdSectionScreen(val sectionType: HomeSectionType) : Screen {
                         IconButton(onClick = { screenModel.refresh() }) {
                             Icon(imageVector = Icons.Default.Refresh, contentDescription = "تحديث")
                         }
-                    }
+                    },
                 )
-            }
+            },
         ) { paddingValues ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
+                    .padding(paddingValues),
             ) {
                 when {
                     state.isLoading && state.items.isEmpty() -> {
@@ -103,11 +103,11 @@ class MdSectionScreen(val sectionType: HomeSectionType) : Screen {
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Text(
                                 text = state.error!!,
-                                color = MaterialTheme.colorScheme.error
+                                color = MaterialTheme.colorScheme.error,
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(onClick = { screenModel.refresh() }) {
@@ -132,7 +132,7 @@ class MdSectionScreen(val sectionType: HomeSectionType) : Screen {
                                         is HomeItem.ChapterCard -> item.chapterId
                                         is HomeItem.HistoryCard -> item.localMangaId.toString()
                                     }
-                                }
+                                },
                             ) { item ->
                                 CompactGridCard(
                                     item = item,
@@ -140,7 +140,7 @@ class MdSectionScreen(val sectionType: HomeSectionType) : Screen {
                                         screenModel.onItemClick(item) { localMangaId ->
                                             navigator.push(MangaScreen(localMangaId, true))
                                         }
-                                    }
+                                    },
                                 )
                             }
 
@@ -150,7 +150,7 @@ class MdSectionScreen(val sectionType: HomeSectionType) : Screen {
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(16.dp),
-                                        contentAlignment = Alignment.Center
+                                        contentAlignment = Alignment.Center,
                                     ) {
                                         CircularProgressIndicator()
                                     }
@@ -166,7 +166,7 @@ class MdSectionScreen(val sectionType: HomeSectionType) : Screen {
     @Composable
     private fun CompactGridCard(
         item: HomeItem,
-        onClick: () -> Unit
+        onClick: () -> Unit,
     ) {
         val domainCover = DomainMangaCover(
             mangaId = when (item) {
@@ -183,10 +183,10 @@ class MdSectionScreen(val sectionType: HomeSectionType) : Screen {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onClick() }
+                .clickable { onClick() },
         ) {
             Box(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 MangaCover.Book(
                     modifier = Modifier.fillMaxWidth(),
@@ -202,7 +202,7 @@ class MdSectionScreen(val sectionType: HomeSectionType) : Screen {
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
 
             val badgeText = when (item) {
@@ -218,7 +218,7 @@ class MdSectionScreen(val sectionType: HomeSectionType) : Screen {
                     style = MaterialTheme.typography.labelSmall,
                     color = tachiyomi.presentation.core.theme.primaryTextColor(),
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }

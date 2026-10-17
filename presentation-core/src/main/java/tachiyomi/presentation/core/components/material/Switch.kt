@@ -1,10 +1,10 @@
 package tachiyomi.presentation.core.components.material
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch as MaterialSwitch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.Switch as MaterialSwitch
 
 @Composable
 fun Switch(

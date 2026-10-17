@@ -119,7 +119,7 @@ class MangaDexService(
         mangaId: String,
         limit: Int = 20,
         offset: Int = 0,
-        languages: List<String> = listOf("en")
+        languages: List<String> = listOf("en"),
     ): ChapterListDto {
         val url = MdApi.chapter.toHttpUrl()
             .newBuilder()

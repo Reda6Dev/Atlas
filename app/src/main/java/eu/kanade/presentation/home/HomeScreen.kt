@@ -65,15 +65,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.tachiyomi.ui.home.HomeScreenModel
 import eu.kanade.tachiyomi.ui.home.HomeSourceDialogItem
 import eu.kanade.tachiyomi.ui.home.HomeSourceFilter
-import eu.kanade.tachiyomi.ui.home.HomeScreenModel
 import eu.kanade.tachiyomi.ui.home.HomeTabOption
 import eu.kanade.tachiyomi.ui.home.model.HomeItem
 import tachiyomi.domain.library.model.LibraryDisplayMode
-import tachiyomi.domain.manga.model.MangaCover as DomainMangaCover
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.primaryTextColor
+import tachiyomi.domain.manga.model.MangaCover as DomainMangaCover
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

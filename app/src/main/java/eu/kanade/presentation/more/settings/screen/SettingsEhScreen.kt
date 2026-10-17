@@ -68,8 +68,8 @@ import tachiyomi.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
-import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.components.material.Switch
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get

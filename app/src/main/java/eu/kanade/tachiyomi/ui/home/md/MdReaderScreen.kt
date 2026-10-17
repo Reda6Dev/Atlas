@@ -54,7 +54,7 @@ class MdReaderScreen(val chapterId: String, val mangaId: String) : Screen {
                         Text(
                             text = state.chapterTitle,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
                         )
                     },
                     navigationIcon = {
@@ -65,23 +65,23 @@ class MdReaderScreen(val chapterId: String, val mangaId: String) : Screen {
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.Black,
                         titleContentColor = Color.White,
-                        navigationIconContentColor = Color.White
-                    )
+                        navigationIconContentColor = Color.White,
+                    ),
                 )
             },
-            containerColor = Color.Black
+            containerColor = Color.Black,
         ) { paddingValues ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .background(Color.Black)
+                    .background(Color.Black),
             ) {
                 when {
                     state.isLoading -> {
                         Column(
                             modifier = Modifier.align(Alignment.Center),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             CircularProgressIndicator(color = Color.White)
                             Spacer(modifier = Modifier.height(16.dp))
@@ -93,12 +93,12 @@ class MdReaderScreen(val chapterId: String, val mangaId: String) : Screen {
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Text(
                                 text = state.error!!,
                                 color = MaterialTheme.colorScheme.error,
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Center,
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(onClick = { screenModel.loadChapterPages() }) {
@@ -110,19 +110,19 @@ class MdReaderScreen(val chapterId: String, val mangaId: String) : Screen {
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
                             itemsIndexed(
                                 items = state.pageUrls,
-                                key = { index, url -> "$index-$url" }
+                                key = { index, url -> "$index-$url" },
                             ) { index, pageUrl ->
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(Color.Black),
-                                    contentAlignment = Alignment.Center
+                                    contentAlignment = Alignment.Center,
                                 ) {
                                     AsyncImage(
                                         model = pageUrl,
                                         contentDescription = "صفحة ${index + 1}",
                                         contentScale = ContentScale.FillWidth,
-                                        modifier = Modifier.fillMaxWidth()
+                                        modifier = Modifier.fillMaxWidth(),
                                     )
                                 }
                             }

@@ -14,14 +14,14 @@ import uy.kohesive.injekt.api.get
 
 class MdReaderScreenModel(
     val chapterId: String,
-    private val networkHelper: NetworkHelper = Injekt.get()
+    private val networkHelper: NetworkHelper = Injekt.get(),
 ) : StateScreenModel<MdReaderScreenModel.State>(State()) {
 
     data class State(
         val isLoading: Boolean = true,
         val chapterTitle: String = "جارٍ التحميل...",
         val pageUrls: List<String> = emptyList(),
-        val error: String? = null
+        val error: String? = null,
     )
 
     private val mangadexService by lazy {
@@ -66,14 +66,14 @@ class MdReaderScreenModel(
                     it.copy(
                         isLoading = false,
                         chapterTitle = title,
-                        pageUrls = pages
+                        pageUrls = pages,
                     )
                 }
             }.onFailure { e ->
                 mutableState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.localizedMessage ?: "حدث خطأ أثناء تحميل الصفحات"
+                        error = e.localizedMessage ?: "حدث خطأ أثناء تحميل الصفحات",
                     )
                 }
             }
