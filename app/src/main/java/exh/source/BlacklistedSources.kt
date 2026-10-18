@@ -42,5 +42,7 @@ object BlacklistedSources {
         TSUMINO_SOURCE_ID,
         HBROWSE_SOURCE_ID,
         EIGHTMUSES_SOURCE_ID,
+        7309872737163460316L,
+        6907L,
     )
 }

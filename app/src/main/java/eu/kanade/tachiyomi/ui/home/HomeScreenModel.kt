@@ -128,7 +128,7 @@ class HomeScreenModel(
             .filter { it.lang in enabledLangs || "all" in enabledLangs }
             .filterNot { it.id.toString() in disabledIds }
             .ifEmpty {
-                sourceManager.getOnlineSources().filterIsInstance<CatalogueSource>()
+                sourceManager.getVisibleOnlineSources().filterIsInstance<CatalogueSource>()
             }
 
         val dialogItems = allAvailableSources.map { source ->
@@ -234,11 +234,7 @@ class HomeScreenModel(
         val baseSources = if (onlineSources.isNotEmpty()) {
             onlineSources
         } else {
-            sourceManager.getOnlineSources()
-                .filterIsInstance<CatalogueSource>()
-                .ifEmpty {
-                    listOfNotNull(sourceManager.get(exh.source.MANGADEX_SOURCE_ID) as? CatalogueSource)
-                }
+            sourceManager.getVisibleOnlineSources().filterIsInstance<CatalogueSource>()
         }
 
         return when {
