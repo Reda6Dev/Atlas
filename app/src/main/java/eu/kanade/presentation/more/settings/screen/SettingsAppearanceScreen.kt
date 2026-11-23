@@ -18,6 +18,7 @@ import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.screen.appearance.AppLanguageScreen
 import eu.kanade.presentation.more.settings.widget.AppThemeModePreferenceWidget
 import eu.kanade.presentation.more.settings.widget.AppThemePreferenceWidget
+import eu.kanade.presentation.more.settings.widget.UiScalePreferenceWidget
 import eu.kanade.tachiyomi.util.system.toast
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
@@ -107,6 +108,9 @@ object SettingsAppearanceScreen : SearchableSettings {
 
         val now = remember { LocalDate.now() }
 
+        val uiScalePref = uiPreferences.uiScale
+        val uiScale by uiScalePref.collectAsState()
+
         val dateFormat by uiPreferences.dateFormat.collectAsState()
         val formattedNow = remember(dateFormat) {
             UiPreferences.dateFormat(dateFormat).format(now)
@@ -115,6 +119,16 @@ object SettingsAppearanceScreen : SearchableSettings {
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_category_display),
             preferenceItems = listOf(
+                Preference.PreferenceItem.CustomPreference(
+                    title = stringResource(SYMR.strings.pref_ui_scale),
+                ) {
+                    UiScalePreferenceWidget(
+                        value = uiScale,
+                        onScaleChanged = { newScale ->
+                            uiScalePref.set(newScale)
+                        },
+                    )
+                },
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_app_language),
                     onClick = { navigator.push(AppLanguageScreen()) },

@@ -6,6 +6,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -29,6 +30,7 @@ import eu.kanade.presentation.theme.colorscheme.YinYangColorScheme
 import eu.kanade.presentation.theme.colorscheme.YotsubaColorScheme
 import tachiyomi.presentation.core.theme.LocalPrimaryTextColor
 import tachiyomi.presentation.core.theme.LocalSecondaryTextColor
+import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -61,6 +63,16 @@ private fun BaseTachiyomiTheme(
 ) {
     val context = LocalContext.current
     val isDark = isSystemInDarkTheme()
+    val uiPreferences = remember { Injekt.get<UiPreferences>() }
+    val uiScale by uiPreferences.uiScale.collectAsState()
+    val baseDensity = androidx.compose.ui.platform.LocalDensity.current
+    val density = remember(baseDensity, uiScale) {
+        androidx.compose.ui.unit.Density(
+            density = baseDensity.density * uiScale.coerceIn(0.85f, 1.15f),
+            fontScale = baseDensity.fontScale,
+        )
+    }
+
     val colorScheme = remember(appTheme, isDark, isAmoled) {
         getThemeColorScheme(
             context = context,
@@ -73,6 +85,7 @@ private fun BaseTachiyomiTheme(
         colorScheme = colorScheme,
     ) {
         CompositionLocalProvider(
+            androidx.compose.ui.platform.LocalDensity provides density,
             LocalPrimaryTextColor provides if (appTheme == AppTheme.ATLAS && !isDark) {
                 Color(0xFF0A6F96)
             } else {

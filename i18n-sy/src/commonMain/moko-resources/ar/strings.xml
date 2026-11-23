@@ -632,4 +632,16 @@
     <string name="final_chapter">الفصل الأخير</string>
     <string name="pref_include_chapter_url_hash_desc">أضف الأحرف الستة الأولى من تجزئة MD5 الخاصة بعنوان URL الخاص بالفصل إلى اسم ملف أو مجلد الفصل.</string>
     <string name="pref_include_chapter_url_hash">تضمين هاش الرابط للفصل</string>
+
+    <!-- UI Scale Settings -->
+    <string name="pref_ui_scale">حجم الواجهة</string>
+    <string name="pref_ui_scale_summary">تعديل الحجم الشامل للنصوص والأزرار والأيقونات</string>
+    <string name="ui_scale_small">صغير (90%)</string>
+    <string name="ui_scale_standard">عادي (100%)</string>
+    <string name="ui_scale_large">كبير (110%)</string>
+    <string name="ui_scale_reset">إعادة الضبط</string>
+    <string name="ui_scale_preview">معاينة المظهر</string>
+    <string name="ui_scale_preview_title">سولو ليفلينج</string>
+    <string name="ui_scale_preview_badge">الفصل 182</string>
+    <string name="ui_scale_preview_button">اقرأ الآن</string>
 </resources>

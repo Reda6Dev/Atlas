@@ -738,4 +738,16 @@
 
     <!-- Humanize time -->
     <string name="humanize_fallback">moments ago</string>
+
+    <!-- UI Scale Settings -->
+    <string name="pref_ui_scale">UI Scale</string>
+    <string name="pref_ui_scale_summary">Adjust the overall scale of text, buttons, and icons</string>
+    <string name="ui_scale_small">Small (90%)</string>
+    <string name="ui_scale_standard">Standard (100%)</string>
+    <string name="ui_scale_large">Large (110%)</string>
+    <string name="ui_scale_reset">Reset</string>
+    <string name="ui_scale_preview">Live Preview</string>
+    <string name="ui_scale_preview_title">Solo Leveling</string>
+    <string name="ui_scale_preview_badge">Chapter 182</string>
+    <string name="ui_scale_preview_button">Read Now</string>
 </resources>
