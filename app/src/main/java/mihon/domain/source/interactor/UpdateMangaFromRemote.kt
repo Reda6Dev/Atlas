@@ -17,12 +17,15 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.library.service.LibraryPreferences
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.isLocal
 import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
 
 class UpdateMangaFromRemote(
     private val sourceManager: SourceManager,
@@ -55,6 +58,8 @@ class UpdateMangaFromRemote(
         )
     }
 
+    private val mangaLocks = ConcurrentHashMap<Long, Mutex>()
+
     suspend operator fun invoke(
         source: Source,
         manga: Manga,
@@ -64,10 +69,12 @@ class UpdateMangaFromRemote(
         fetchWindow: Pair<Long, Long> = Pair(0, 0),
         throttleFunc: suspend () -> Unit = {},
     ): Result<RemoteMangaUpdate> {
-        return try {
-            val chapters = chapterRepository.getChapterByMangaId(manga.id)
-                .sortedBy { it.sourceOrder }
-            val update = withIOContext {
+        val mutex = mangaLocks.computeIfAbsent(manga.id) { Mutex() }
+        return mutex.withLock {
+            try {
+                val chapters = chapterRepository.getChapterByMangaId(manga.id)
+                    .sortedBy { it.sourceOrder }
+                val update = withIOContext {
                 // SY -->
                 if (source is EHentai) {
                     source.getMangaUpdate(
@@ -107,6 +114,7 @@ class UpdateMangaFromRemote(
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             Result.failure(e)
+        }
         }
     }
 

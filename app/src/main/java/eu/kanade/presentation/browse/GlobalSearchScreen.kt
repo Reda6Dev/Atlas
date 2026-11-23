@@ -1,6 +1,8 @@
 package eu.kanade.presentation.browse
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -17,6 +19,7 @@ import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.screens.EmptyScreen
 
 @Composable
 fun GlobalSearchScreen(
@@ -70,33 +73,47 @@ internal fun GlobalSearchContent(
     onLongClickItem: (Manga) -> Unit,
     fromSourceId: Long? = null,
 ) {
-    LazyColumn(
-        contentPadding = contentPadding,
-    ) {
-        items.forEach { (source, result) ->
-            item(key = source.id) {
-                GlobalSearchResultItem(
-                    title = fromSourceId?.let {
-                        "▶ ${source.name}".takeIf { source.id == fromSourceId }
-                    } ?: source.name,
-                    subtitle = LocaleHelper.getLocalizedDisplayName(source.lang),
-                    onClick = { onClickSource(source) },
-                    modifier = Modifier.animateItem(),
-                ) {
-                    when (result) {
-                        SearchItemResult.Loading -> {
-                            GlobalSearchLoadingResultItem()
-                        }
-                        is SearchItemResult.Success -> {
-                            GlobalSearchCardRow(
-                                titles = result.result,
-                                getManga = getManga,
-                                onClick = onClickItem,
-                                onLongClick = onLongClickItem,
-                            )
-                        }
-                        is SearchItemResult.Error -> {
-                            GlobalSearchErrorResultItem(message = result.throwable.message)
+    val allFinished = items.values.none { it is SearchItemResult.Loading }
+    val hasNoResults = items.isEmpty() || (allFinished && items.values.none {
+        it is SearchItemResult.Success && it.result.isNotEmpty()
+    })
+
+    if (hasNoResults) {
+        EmptyScreen(
+            message = "غير متوفرة في مصادرك",
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPadding),
+        )
+    } else {
+        LazyColumn(
+            contentPadding = contentPadding,
+        ) {
+            items.forEach { (source, result) ->
+                item(key = source.id) {
+                    GlobalSearchResultItem(
+                        title = fromSourceId?.let {
+                            "▶ ${source.name}".takeIf { source.id == fromSourceId }
+                        } ?: source.name,
+                        subtitle = LocaleHelper.getLocalizedDisplayName(source.lang),
+                        onClick = { onClickSource(source) },
+                        modifier = Modifier.animateItem(),
+                    ) {
+                        when (result) {
+                            SearchItemResult.Loading -> {
+                                GlobalSearchLoadingResultItem()
+                            }
+                            is SearchItemResult.Success -> {
+                                GlobalSearchCardRow(
+                                    titles = result.result,
+                                    getManga = getManga,
+                                    onClick = onClickItem,
+                                    onLongClick = onLongClickItem,
+                                )
+                            }
+                            is SearchItemResult.Error -> {
+                                GlobalSearchErrorResultItem(message = result.throwable.message)
+                            }
                         }
                     }
                 }

@@ -68,10 +68,9 @@ fun Screen.sourcesTab(
                 state = state,
                 contentPadding = contentPadding,
                 onClickItem = { source, listing ->
-                    // SY -->
+                    // SY --> Direct Catalog Navigation
                     val screen = when {
                         smartSearchConfig != null -> SmartSearchScreen(source.id, smartSearchConfig)
-                        listing == Listing.Popular && screenModel.useNewSourceNavigation -> SourceFeedScreen(source.id)
                         else -> BrowseSourceScreen(source.id, listing.query)
                     }
                     navigator.push(screen)

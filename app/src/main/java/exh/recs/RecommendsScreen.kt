@@ -9,6 +9,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import exh.recs.RecommendsScreen.Args.MergedSourceMangas
@@ -46,7 +47,7 @@ class RecommendsScreen(private val args: Args) : Screen() {
         val onClickItem = { manga: Manga ->
             navigator.push(
                 when (manga.source) {
-                    -1L -> SourcesScreen(SourcesScreen.SmartSearchConfig(manga.ogTitle))
+                    -1L -> GlobalSearchScreen(manga.ogTitle.ifBlank { manga.title })
                     else -> MangaScreen(manga.id, true)
                 },
             )

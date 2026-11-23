@@ -90,7 +90,7 @@ data object MoreTab : Tab {
     }
 }
 
-private class MoreScreenModel(
+class MoreScreenModel(
     private val downloadManager: DownloadManager = Injekt.get(),
     preferences: BasePreferences = Injekt.get(),
     // SY -->

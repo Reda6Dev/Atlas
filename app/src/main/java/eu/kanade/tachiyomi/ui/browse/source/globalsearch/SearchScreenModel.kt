@@ -41,7 +41,7 @@ abstract class SearchScreenModel(
 ) : StateScreenModel<SearchScreenModel.State>(initialState) {
 
     private val coroutineDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
-    private var searchJob: Job? = null
+    protected var searchJob: Job? = null
 
     private val enabledLanguages = sourcePreferences.enabledLanguages.get()
     private val disabledSources = sourcePreferences.disabledSources.get()
@@ -120,7 +120,7 @@ abstract class SearchScreenModel(
         preferences.globalSearchFilterState.toggle()
     }
 
-    fun search() {
+    open fun search() {
         val query = state.value.searchQuery
         val sourceFilter = state.value.sourceFilter
 
@@ -151,6 +151,18 @@ abstract class SearchScreenModel(
         }
 
         searchJob = ioCoroutineScope.launch {
+            searchInternal(query)
+        }
+    }
+
+    suspend fun searchInternal(query: String) {
+        val sources = getSelectedSources()
+
+        updateItems(
+            sources.associateWith { SearchItemResult.Loading },
+        )
+
+        kotlinx.coroutines.coroutineScope {
             sources.map { source ->
                 async {
                     if (state.value.items[source] !is SearchItemResult.Loading) {
@@ -176,8 +188,7 @@ abstract class SearchScreenModel(
                         }
                     }
                 }
-            }
-                .awaitAll()
+            }.awaitAll()
         }
     }
 
@@ -209,7 +220,7 @@ abstract class SearchScreenModel(
     data class State(
         val from: Manga? = null,
         val searchQuery: String? = null,
-        val sourceFilter: SourceFilter = SourceFilter.PinnedOnly,
+        val sourceFilter: SourceFilter = SourceFilter.All,
         val onlyShowHasResults: Boolean = false,
         val items: Map<Source, SearchItemResult> = mapOf(),
         val dialog: Dialog? = null,

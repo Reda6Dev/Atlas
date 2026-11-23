@@ -7,6 +7,7 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.home.model.HomeItem
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -213,10 +214,19 @@ class HomeScreenModel(
         loadData()
     }
 
+    private var loadDataJob: Job? = null
+
     private fun loadData() {
-        screenModelScope.launchIO {
-            loadLatestChapters(0)
-            loadDiscoverManga(0)
+        loadDataJob?.cancel()
+        loadDataJob = screenModelScope.launchIO {
+            val allSources = getActiveSources()
+            val availableFilterList = listOf(HomeSourceFilter(null, "الكل")) + allSources.map { HomeSourceFilter(it.id, it.name) }
+            mutableState.update { it.copy(availableSources = availableFilterList) }
+
+            val currentSelectedId = state.value.selectedSourceId
+
+            loadLatestChapters(0, currentSelectedId, allSources, availableFilterList)
+            loadDiscoverManga(0, currentSelectedId, allSources, availableFilterList)
             mutableState.update { it.copy(isRefreshing = false) }
         }
     }
@@ -248,7 +258,9 @@ class HomeScreenModel(
         val currentState = state.value
         if (currentState.isLoadingLatest || currentState.isLoadingMoreLatest || !currentState.hasMoreLatest) return
         screenModelScope.launchIO {
-            loadLatestChapters(currentState.latestChaptersPage + 1)
+            val allSources = getActiveSources()
+            val availableFilterList = listOf(HomeSourceFilter(null, "الكل")) + allSources.map { HomeSourceFilter(it.id, it.name) }
+            loadLatestChapters(currentState.latestChaptersPage + 1, currentState.selectedSourceId, allSources, availableFilterList)
         }
     }
 
@@ -256,33 +268,41 @@ class HomeScreenModel(
         val currentState = state.value
         if (currentState.isLoadingDiscover || currentState.isLoadingMoreDiscover || !currentState.hasMoreDiscover) return
         screenModelScope.launchIO {
-            loadDiscoverManga(currentState.discoverPage + 1)
+            val allSources = getActiveSources()
+            val availableFilterList = listOf(HomeSourceFilter(null, "الكل")) + allSources.map { HomeSourceFilter(it.id, it.name) }
+            loadDiscoverManga(currentState.discoverPage + 1, currentState.selectedSourceId, allSources, availableFilterList)
         }
     }
 
-    private suspend fun loadLatestChapters(page: Int) {
+    private suspend fun loadLatestChapters(
+        page: Int,
+        requestSelectedSourceId: Long? = state.value.selectedSourceId,
+        precomputedSources: List<CatalogueSource>? = null,
+        precomputedFilterList: List<HomeSourceFilter>? = null,
+    ) {
         if (page > 0) {
             mutableState.update { it.copy(isLoadingMoreLatest = true) }
         }
 
-        val allSources = getActiveSources()
-        val availableFilterList = listOf(HomeSourceFilter(null, "الكل")) + allSources.map { HomeSourceFilter(it.id, it.name) }
+        val allSources = precomputedSources ?: getActiveSources()
+        val availableFilterList = precomputedFilterList ?: (listOf(HomeSourceFilter(null, "الكل")) + allSources.map { HomeSourceFilter(it.id, it.name) })
 
-        val selectedId = state.value.selectedSourceId
-        val targetSources = if (selectedId != null) {
-            allSources.filter { it.id == selectedId }
+        val targetSources = if (requestSelectedSourceId != null) {
+            allSources.filter { it.id == requestSelectedSourceId }
         } else {
             allSources
         }
 
         if (targetSources.isEmpty()) {
-            mutableState.update {
-                it.copy(
-                    availableSources = availableFilterList,
-                    isLoadingLatest = false,
-                    isLoadingMoreLatest = false,
-                    latestError = if (allSources.isEmpty()) "لا توجد مصادر مفعلة للشاشة الرئيسية." else "تعذر التوصل لمحتوى من المصدر المالي.",
-                )
+            if (state.value.selectedSourceId == requestSelectedSourceId) {
+                mutableState.update {
+                    it.copy(
+                        availableSources = availableFilterList,
+                        isLoadingLatest = false,
+                        isLoadingMoreLatest = false,
+                        latestError = if (allSources.isEmpty()) "لا توجد مصادر مفعلة للشاشة الرئيسية." else "تعذر التوصل لمحتوى من المصدر المالي.",
+                    )
+                }
             }
             return
         }
@@ -293,6 +313,8 @@ class HomeScreenModel(
         var hasNextPageAny = false
 
         for (source in targetSources) {
+            if (state.value.selectedSourceId != requestSelectedSourceId) return
+
             val result = runCatching {
                 val mangasPage = source.getLatestUpdates(page + 1)
                 val items = mangasPage.mangas.map { sManga ->
@@ -317,6 +339,8 @@ class HomeScreenModel(
                 lastException = result.exceptionOrNull()
             }
         }
+
+        if (state.value.selectedSourceId != requestSelectedSourceId) return
 
         if (anySuccess) {
             val currentItems = state.value.latestChaptersItems
@@ -347,29 +371,35 @@ class HomeScreenModel(
         }
     }
 
-    private suspend fun loadDiscoverManga(page: Int) {
+    private suspend fun loadDiscoverManga(
+        page: Int,
+        requestSelectedSourceId: Long? = state.value.selectedSourceId,
+        precomputedSources: List<CatalogueSource>? = null,
+        precomputedFilterList: List<HomeSourceFilter>? = null,
+    ) {
         if (page > 0) {
             mutableState.update { it.copy(isLoadingMoreDiscover = true) }
         }
 
-        val allSources = getActiveSources()
-        val availableFilterList = listOf(HomeSourceFilter(null, "الكل")) + allSources.map { HomeSourceFilter(it.id, it.name) }
+        val allSources = precomputedSources ?: getActiveSources()
+        val availableFilterList = precomputedFilterList ?: (listOf(HomeSourceFilter(null, "الكل")) + allSources.map { HomeSourceFilter(it.id, it.name) })
 
-        val selectedId = state.value.selectedSourceId
-        val targetSources = if (selectedId != null) {
-            allSources.filter { it.id == selectedId }
+        val targetSources = if (requestSelectedSourceId != null) {
+            allSources.filter { it.id == requestSelectedSourceId }
         } else {
             allSources
         }
 
         if (targetSources.isEmpty()) {
-            mutableState.update {
-                it.copy(
-                    availableSources = availableFilterList,
-                    isLoadingDiscover = false,
-                    isLoadingMoreDiscover = false,
-                    discoverError = if (allSources.isEmpty()) "لا توجد مصادر مفعلة للشاشة الرئيسية." else "تعذر التوصل لمحتوى من المصدر المالي.",
-                )
+            if (state.value.selectedSourceId == requestSelectedSourceId) {
+                mutableState.update {
+                    it.copy(
+                        availableSources = availableFilterList,
+                        isLoadingDiscover = false,
+                        isLoadingMoreDiscover = false,
+                        discoverError = if (allSources.isEmpty()) "لا توجد مصادر مفعلة للشاشة الرئيسية." else "تعذر التوصل لمحتوى من المصدر المالي.",
+                    )
+                }
             }
             return
         }
@@ -380,6 +410,8 @@ class HomeScreenModel(
         var hasNextPageAny = false
 
         for (source in targetSources) {
+            if (state.value.selectedSourceId != requestSelectedSourceId) return
+
             val result = runCatching {
                 val mangasPage = source.getPopularManga(page + 1)
                 val items = mangasPage.mangas.map { sManga ->
@@ -404,6 +436,8 @@ class HomeScreenModel(
                 lastException = result.exceptionOrNull()
             }
         }
+
+        if (state.value.selectedSourceId != requestSelectedSourceId) return
 
         if (anySuccess) {
             val currentItems = state.value.discoverItems

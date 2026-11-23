@@ -3,6 +3,7 @@ package eu.kanade.presentation.library.components
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.SelectAll
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.LocalOpenDrawer
 import eu.kanade.presentation.components.SearchToolbar
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
@@ -90,6 +92,8 @@ private fun LibraryRegularToolbar(
 ) {
     val pillAlpha = if (isSystemInDarkTheme()) 0.12f else 0.08f
     SearchToolbar(
+        navigateUp = LocalOpenDrawer.current,
+        navigationIcon = Icons.Default.Menu,
         titleContent = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(

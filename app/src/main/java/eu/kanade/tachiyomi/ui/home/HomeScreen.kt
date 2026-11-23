@@ -23,27 +23,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -54,13 +54,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
@@ -68,16 +67,23 @@ import cafe.adriel.voyager.navigator.tab.TabNavigator
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.presentation.components.AppNavigationDrawerSheet
+import eu.kanade.presentation.components.LocalOpenDrawer
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.ui.browse.BrowseTab
+import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.download.DownloadQueueScreen
 import eu.kanade.tachiyomi.ui.history.HistoryTab
 import eu.kanade.tachiyomi.ui.library.LibraryTab
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import eu.kanade.tachiyomi.ui.more.MoreScreenModel
 import eu.kanade.tachiyomi.ui.more.MoreTab
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.ui.setting.SettingsScreen
+import eu.kanade.tachiyomi.ui.stats.StatsScreen
 import eu.kanade.tachiyomi.ui.updates.UpdatesTab
+import exh.ui.batchadd.BatchAddScreen
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -94,7 +100,6 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.NavigationRail
 import tachiyomi.presentation.core.components.material.Scaffold
-import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -141,65 +146,94 @@ object HomeScreen : Screen() {
             }
         }
 
+        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        val openDrawer: () -> Unit = remember(drawerState, scope) {
+            { scope.launch { drawerState.open() } }
+        }
+        val moreScreenModel = rememberScreenModel { MoreScreenModel() }
+        val downloadQueueState by moreScreenModel.downloadQueueState.collectAsState()
+
         TabNavigator(
             tab = HomeTab,
             key = TabNavigatorKey,
         ) { tabNavigator ->
-            CompositionLocalProvider(LocalNavigator provides navigator) {
-                Scaffold(
-                    startBar = {
-                        if (isTabletUi()) {
-                            NavigationRail {
-                                if (HomeTab.isEnabled()) NavigationRailItem(HomeTab, alwaysShowLabel)
-                                if (LibraryTab.isEnabled()) NavigationRailItem(LibraryTab, alwaysShowLabel)
-                                CentralResumeRailItem(alwaysShowLabel, onResumeClick)
-                                if (BrowseTab.isEnabled()) NavigationRailItem(BrowseTab, alwaysShowLabel)
-                                if (MoreTab.isEnabled()) NavigationRailItem(MoreTab, alwaysShowLabel)
-                            }
-                        }
+            CompositionLocalProvider(
+                LocalNavigator provides navigator,
+                LocalOpenDrawer provides openDrawer,
+            ) {
+                ModalNavigationDrawer(
+                    drawerState = drawerState,
+                    drawerContent = {
+                        AppNavigationDrawerSheet(
+                            downloadQueueStateProvider = { downloadQueueState },
+                            downloadedOnly = moreScreenModel.downloadedOnly,
+                            onDownloadedOnlyChange = { moreScreenModel.downloadedOnly = it },
+                            incognitoMode = moreScreenModel.incognitoMode,
+                            onIncognitoModeChange = { moreScreenModel.incognitoMode = it },
+                            onClickHistory = { navigator.push(HistoryTab) },
+                            onClickDownloadQueue = { navigator.push(DownloadQueueScreen) },
+                            onClickCategories = { navigator.push(CategoryScreen()) },
+                            onClickStats = { navigator.push(StatsScreen()) },
+                            onClickDataAndStorage = { navigator.push(SettingsScreen(SettingsScreen.Destination.DataAndStorage)) },
+                            onClickSettings = { navigator.push(SettingsScreen()) },
+                            onClickAbout = { navigator.push(SettingsScreen(SettingsScreen.Destination.About)) },
+                            onClickBatchAdd = { navigator.push(BatchAddScreen()) },
+                            onCloseDrawer = { scope.launch { drawerState.close() } },
+                        )
                     },
-                    bottomBar = {
-                        if (!isTabletUi()) {
-                            val bottomNavVisible by produceState(initialValue = true) {
-                                showBottomNavEvent.receiveAsFlow().collectLatest { value = it }
+                ) {
+                    Scaffold(
+                        startBar = {
+                            if (isTabletUi()) {
+                                NavigationRail {
+                                    if (HomeTab.isEnabled()) NavigationRailItem(HomeTab, alwaysShowLabel)
+                                    if (LibraryTab.isEnabled()) NavigationRailItem(LibraryTab, alwaysShowLabel)
+                                    if (BrowseTab.isEnabled()) NavigationRailItem(BrowseTab, alwaysShowLabel)
+                                }
                             }
-                            AnimatedVisibility(
-                                visible = bottomNavVisible,
-                                enter = expandVertically(),
-                                exit = shrinkVertically(),
-                            ) {
-                                CustomFloatingNavigationBar(
-                                    currentTab = tabNavigator.current,
-                                    onTabSelected = { tab ->
-                                        if (tabNavigator.current::class != tab::class) {
-                                            tabNavigator.current = tab
-                                        } else {
-                                            scope.launch { tab.onReselect(navigator) }
-                                        }
-                                    },
-                                    onResumeClick = onResumeClick,
-                                )
+                        },
+                        bottomBar = {
+                            if (!isTabletUi()) {
+                                val bottomNavVisible by produceState(initialValue = true) {
+                                    showBottomNavEvent.receiveAsFlow().collectLatest { value = it }
+                                }
+                                AnimatedVisibility(
+                                    visible = bottomNavVisible,
+                                    enter = expandVertically(),
+                                    exit = shrinkVertically(),
+                                ) {
+                                    CustomFloatingNavigationBar(
+                                        currentTab = tabNavigator.current,
+                                        onTabSelected = { tab ->
+                                            if (tabNavigator.current::class != tab::class) {
+                                                tabNavigator.current = tab
+                                            } else {
+                                                scope.launch { tab.onReselect(navigator) }
+                                            }
+                                        },
+                                    )
+                                }
                             }
-                        }
-                    },
-                    snackbarHost = { SnackbarHost(snackbarHostState) },
-                    contentWindowInsets = WindowInsets(0),
-                ) { contentPadding ->
-                    Box(
-                        modifier = Modifier
-                            .padding(contentPadding)
-                            .consumeWindowInsets(contentPadding),
-                    ) {
-                        AnimatedContent(
-                            targetState = tabNavigator.current,
-                            transitionSpec = {
-                                materialFadeThroughIn(initialScale = 1f, durationMillis = TabFadeDuration) togetherWith
-                                    materialFadeThroughOut(durationMillis = TabFadeDuration)
-                            },
-                            label = "tabContent",
+                        },
+                        snackbarHost = { SnackbarHost(snackbarHostState) },
+                        contentWindowInsets = WindowInsets(0),
+                    ) { contentPadding ->
+                        Box(
+                            modifier = Modifier
+                                .padding(contentPadding)
+                                .consumeWindowInsets(contentPadding),
                         ) {
-                            tabNavigator.saveableState(key = "currentTab", it) {
-                                it.Content()
+                            AnimatedContent(
+                                targetState = tabNavigator.current,
+                                transitionSpec = {
+                                    materialFadeThroughIn(initialScale = 1f, durationMillis = TabFadeDuration) togetherWith
+                                        materialFadeThroughOut(durationMillis = TabFadeDuration)
+                                },
+                                label = "tabContent",
+                            ) {
+                                tabNavigator.saveableState(key = "currentTab", it) {
+                                    it.Content()
+                                }
                             }
                         }
                     }
@@ -249,7 +283,6 @@ object HomeScreen : Screen() {
     private fun CustomFloatingNavigationBar(
         currentTab: cafe.adriel.voyager.navigator.tab.Tab,
         onTabSelected: (eu.kanade.presentation.util.Tab) -> Unit,
-        onResumeClick: () -> Unit,
         modifier: Modifier = Modifier,
     ) {
         val navBarsInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -303,8 +336,6 @@ object HomeScreen : Screen() {
                         )
                     }
 
-                    Box(modifier = Modifier.weight(1f))
-
                     if (BrowseTab.isEnabled()) {
                         FloatingNavItem(
                             tab = BrowseTab,
@@ -313,50 +344,7 @@ object HomeScreen : Screen() {
                             modifier = Modifier.weight(1f),
                         )
                     }
-
-                    if (MoreTab.isEnabled()) {
-                        FloatingNavItem(
-                            tab = MoreTab,
-                            isSelected = currentTab::class == MoreTab::class,
-                            onClick = { onTabSelected(MoreTab) },
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
                 }
-            }
-
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .offset(y = (-18).dp)
-                    .size(70.dp)
-                    .background(MaterialTheme.colorScheme.background, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Surface(
-                    onClick = onResumeClick,
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary,
-                    shadowElevation = 8.dp,
-                    modifier = Modifier.size(60.dp),
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.PlayArrow,
-                            contentDescription = "متابعة القراءة",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(28.dp),
-                        )
-                    }
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .border(5.dp, MaterialTheme.colorScheme.background, CircleShape),
-                )
             }
         }
     }
@@ -449,47 +437,6 @@ object HomeScreen : Screen() {
                 )
             }
         }
-    }
-
-    @Composable
-    private fun CentralResumeRailItem(
-        alwaysShowLabel: Boolean,
-        onClickResume: () -> Unit,
-    ) {
-        NavigationRailItem(
-            selected = false,
-            onClick = onClickResume,
-            icon = {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    shadowElevation = 6.dp,
-                    modifier = Modifier.size(42.dp),
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.PlayArrow,
-                            contentDescription = "متابعة القراءة",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(26.dp),
-                        )
-                    }
-                }
-            },
-            label = {
-                Text(
-                    text = "متابعة القراءة",
-                    style = MaterialTheme.typography.labelMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            },
-            alwaysShowLabel = alwaysShowLabel,
-        )
     }
 
     @Composable

@@ -46,6 +46,7 @@ fun HistoryScreen(
     onClickResume: (mangaId: Long, chapterId: Long) -> Unit,
     onClickFavorite: (mangaId: Long) -> Unit,
     onDialogChange: (HistoryScreenModel.Dialog?) -> Unit,
+    navigateUp: (() -> Unit)? = null,
     sectionBar: (@Composable () -> Unit)? = null,
 ) {
     Scaffold(
@@ -56,6 +57,7 @@ fun HistoryScreen(
                     .background(MaterialTheme.colorScheme.background),
             ) {
                 SearchToolbar(
+                    navigateUp = navigateUp,
                     titleContent = {
                         AppBarTitle(
                             stringResource(MR.strings.history),

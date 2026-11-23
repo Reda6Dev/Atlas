@@ -154,9 +154,6 @@ data object LibraryTab : Tab {
         val updatesSettingsScreenModel = rememberScreenModel { UpdatesSettingsScreenModel() }
         val updatesState by updatesScreenModel.state.collectAsState()
 
-        val historyScreenModel = rememberScreenModel { HistoryScreenModel() }
-        val historyState by historyScreenModel.state.collectAsState()
-
         val snackbarHostState = remember { SnackbarHostState() }
 
         val onClickRefresh: (Category?) -> Boolean = { category ->
@@ -201,19 +198,12 @@ data object LibraryTab : Tab {
                     selectedSection = selectedSection,
                     onSectionSelected = { selectedSection = it },
                 )
-                1 -> RenderUpdatesSection(
+                else -> RenderUpdatesSection(
                     navigator = navigator,
                     context = context,
                     screenModel = updatesScreenModel,
                     settingsScreenModel = updatesSettingsScreenModel,
                     state = updatesState,
-                    selectedSection = selectedSection,
-                    onSectionSelected = { selectedSection = it },
-                )
-                2 -> RenderHistorySection(
-                    navigator = navigator,
-                    screenModel = historyScreenModel,
-                    state = historyState,
                     selectedSection = selectedSection,
                     onSectionSelected = { selectedSection = it },
                 )
@@ -251,7 +241,6 @@ data object LibraryTab : Tab {
         val titles = listOf(
             stringResource(MR.strings.label_library),
             stringResource(MR.strings.label_recent_updates),
-            stringResource(MR.strings.label_recent_manga),
         )
 
         Surface(
@@ -668,83 +657,6 @@ data object LibraryTab : Tab {
             onDispose {
                 screenModel.resetNewUpdatesCount()
             }
-        }
-    }
-
-    @Composable
-    private fun RenderHistorySection(
-        navigator: Navigator,
-        screenModel: HistoryScreenModel,
-        state: HistoryScreenModel.State,
-        selectedSection: Int,
-        onSectionSelected: (Int) -> Unit,
-    ) {
-        HistoryScreen(
-            state = state,
-            snackbarHostState = screenModel.snackbarHostState,
-            onSearchQueryChange = screenModel::updateSearchQuery,
-            onClickCover = { navigator.push(MangaScreen(it)) },
-            onClickResume = screenModel::getNextChapterForManga,
-            onDialogChange = screenModel::setDialog,
-            onClickFavorite = screenModel::addFavorite,
-            sectionBar = {
-                Spacer(Modifier.height(16.dp))
-                CustomSegmentedControl(
-                    selectedSection = selectedSection,
-                    onSectionSelected = onSectionSelected,
-                )
-                Spacer(Modifier.height(14.dp))
-            },
-        )
-
-        val onDismissRequest = { screenModel.setDialog(null) }
-        when (val dialog = state.dialog) {
-            is HistoryScreenModel.Dialog.Delete -> {
-                HistoryDeleteDialog(
-                    onDismissRequest = onDismissRequest,
-                    onDelete = { all ->
-                        if (all) {
-                            screenModel.removeAllFromHistory(dialog.history.mangaId)
-                        } else {
-                            screenModel.removeFromHistory(dialog.history)
-                        }
-                    },
-                )
-            }
-            is HistoryScreenModel.Dialog.DeleteAll -> {
-                HistoryDeleteAllDialog(
-                    onDismissRequest = onDismissRequest,
-                    onDelete = screenModel::removeAllHistory,
-                )
-            }
-            is HistoryScreenModel.Dialog.DuplicateManga -> {
-                DuplicateMangaDialog(
-                    duplicates = dialog.duplicates,
-                    onDismissRequest = onDismissRequest,
-                    onConfirm = { screenModel.addFavorite(dialog.manga) },
-                    onOpenManga = { navigator.push(MangaScreen(it.id)) },
-                    onMigrate = { screenModel.showMigrateDialog(dialog.manga, it) },
-                )
-            }
-            is HistoryScreenModel.Dialog.ChangeCategory -> {
-                ChangeCategoryDialog(
-                    initialSelection = dialog.initialSelection,
-                    onDismissRequest = onDismissRequest,
-                    onEditCategories = { navigator.push(CategoryScreen()) },
-                    onConfirm = { include, _ ->
-                        screenModel.moveMangaToCategoriesAndAddToLibrary(dialog.manga, include)
-                    },
-                )
-            }
-            is HistoryScreenModel.Dialog.Migrate -> {
-                MigrateMangaDialog(
-                    current = dialog.current,
-                    target = dialog.target,
-                    onClickTitle = { navigator.push(MangaScreen(dialog.current.id)) },
-                    onDismissRequest = onDismissRequest,
-                )
-            }
-            null -> {}
         }
     }
 

@@ -325,7 +325,11 @@ data class BrowseSourceScreen(
             BrowseSourceContent(
                 source = screenModel.source,
                 mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems(),
-                columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
+                columns = if (screenModel.displayMode == tachiyomi.domain.library.model.LibraryDisplayMode.CoverOnlyGrid) {
+                    androidx.compose.foundation.lazy.grid.GridCells.Fixed(3)
+                } else {
+                    screenModel.getColumnsPreference(LocalConfiguration.current.orientation)
+                },
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,
                 // SY <--

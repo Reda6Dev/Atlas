@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
@@ -30,6 +31,7 @@ import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.LocalOpenDrawer
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.MangaBottomActionMenu
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -170,6 +172,8 @@ private fun UpdatesAppBar(
     modifier: Modifier = Modifier,
 ) {
     AppBar(
+        navigateUp = LocalOpenDrawer.current,
+        navigationIcon = Icons.Default.Menu,
         modifier = modifier,
         title = stringResource(MR.strings.label_recent_updates),
         titleTextStyle = TextStyle(fontSize = 34.sp, fontWeight = FontWeight.Bold),

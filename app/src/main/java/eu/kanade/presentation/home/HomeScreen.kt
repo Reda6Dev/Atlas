@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -64,6 +65,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.LocalOpenDrawer
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.tachiyomi.ui.home.HomeScreenModel
 import eu.kanade.tachiyomi.ui.home.HomeSourceDialogItem
@@ -183,6 +185,8 @@ private fun HomeTopAppBar(
     var showDisplayModeSubMenu by remember { mutableStateOf(false) }
 
     AppBar(
+        navigateUp = LocalOpenDrawer.current,
+        navigationIcon = Icons.Default.Menu,
         titleContent = {
             Text(
                 text = "الرئيسية",

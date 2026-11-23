@@ -425,7 +425,7 @@ class MangaScreenModel(
                     // SY -->
                     showRecommendationsInOverflow = uiPreferences.recommendsInOverflow.get(),
                     showMergeInOverflow = uiPreferences.mergeInOverflow.get(),
-                    showMergeWithAnother = smartSearched,
+                    showMergeWithAnother = smartSearched && manga.favorite && manga.source != MERGED_SOURCE_ID,
                     mergedData = mergedData,
                     meta = raiseMetadata(meta, source),
                     pagePreviewsState = if (source.getMainSource() is PagePreviewSource) {

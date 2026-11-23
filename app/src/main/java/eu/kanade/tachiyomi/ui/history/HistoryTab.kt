@@ -89,6 +89,7 @@ data object HistoryTab : Tab {
             onClickResume = screenModel::getNextChapterForManga,
             onDialogChange = screenModel::setDialog,
             onClickFavorite = screenModel::addFavorite,
+            navigateUp = { navigator.pop() },
         )
 
         val onDismissRequest = { screenModel.setDialog(null) }
