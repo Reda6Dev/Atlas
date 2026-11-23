@@ -10,6 +10,8 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.source.online.all.MergedSource
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import logcat.LogPriority
 import mihon.domain.source.models.RemoteMangaUpdate
 import tachiyomi.core.common.util.lang.withIOContext
@@ -17,8 +19,6 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.library.service.LibraryPreferences
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository
@@ -75,46 +75,46 @@ class UpdateMangaFromRemote(
                 val chapters = chapterRepository.getChapterByMangaId(manga.id)
                     .sortedBy { it.sourceOrder }
                 val update = withIOContext {
+                    // SY -->
+                    if (source is EHentai) {
+                        source.getMangaUpdate(
+                            manga = manga.toSManga(),
+                            chapters = chapters.map(Chapter::toSChapter),
+                            fetchDetails = fetchDetails,
+                            fetchChapters = fetchChapters,
+                            throttleFunc = throttleFunc,
+                        )
+                    } else {
+                        source.getMangaUpdate(
+                            manga = manga.toSManga(),
+                            chapters = chapters.map(Chapter::toSChapter),
+                            fetchDetails = fetchDetails,
+                            fetchChapters = fetchChapters,
+                        )
+                    }
+                    // SY <--
+                }
+                awaitUpdateFromSource(manga, update.manga, manualFetch)
                 // SY -->
-                if (source is EHentai) {
-                    source.getMangaUpdate(
-                        manga = manga.toSManga(),
-                        chapters = chapters.map(Chapter::toSChapter),
-                        fetchDetails = fetchDetails,
-                        fetchChapters = fetchChapters,
-                        throttleFunc = throttleFunc,
-                    )
+                val newChapters = if (source is MergedSource) {
+                    source.fetchChaptersAndSync(manga, downloadChapters = manualFetch)
                 } else {
-                    source.getMangaUpdate(
-                        manga = manga.toSManga(),
-                        chapters = chapters.map(Chapter::toSChapter),
-                        fetchDetails = fetchDetails,
-                        fetchChapters = fetchChapters,
+                    syncChaptersWithSource.await(
+                        rawSourceChapters = update.chapters,
+                        manga = manga,
+                        source = source,
+                        manualFetch = manualFetch,
+                        fetchWindow = fetchWindow,
                     )
                 }
                 // SY <--
-            }
-            awaitUpdateFromSource(manga, update.manga, manualFetch)
-            // SY -->
-            val newChapters = if (source is MergedSource) {
-                source.fetchChaptersAndSync(manga, downloadChapters = manualFetch)
-            } else {
-                syncChaptersWithSource.await(
-                    rawSourceChapters = update.chapters,
-                    manga = manga,
-                    source = source,
-                    manualFetch = manualFetch,
-                    fetchWindow = fetchWindow,
-                )
-            }
-            // SY <--
-            val updatedManga = mangaRepository.getMangaById(manga.id)
+                val updatedManga = mangaRepository.getMangaById(manga.id)
 
-            Result.success(RemoteMangaUpdate(manga = updatedManga, newChapters = newChapters))
-        } catch (e: Exception) {
-            logcat(LogPriority.ERROR, e)
-            Result.failure(e)
-        }
+                Result.success(RemoteMangaUpdate(manga = updatedManga, newChapters = newChapters))
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR, e)
+                Result.failure(e)
+            }
         }
     }
 

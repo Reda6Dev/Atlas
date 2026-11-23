@@ -85,11 +85,17 @@ jobs:
           mv app/build/outputs/apk/release/app-x86-release-unsigned-signed.apk Atlas-x86.apk
           mv app/build/outputs/apk/release/app-x86_64-release-unsigned-signed.apk Atlas-x86_64.apk
 
+      - name: Extract version name
+        id: get_version
+        run: |
+          VERSION_NAME=$(grep 'versionName = "' app/build.gradle.kts | sed -E 's/.*versionName = "([^"]+)".*/\1/')
+          echo "version=v${VERSION_NAME}" >> $GITHUB_OUTPUT
+
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.run_number }}
-          name: Atlas
+          tag_name: ${{ steps.get_version.outputs.version }}
+          name: Atlas ${{ steps.get_version.outputs.version }}
           body: |
             <!-->
             > [!TIP]

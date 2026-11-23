@@ -74,9 +74,11 @@ internal fun GlobalSearchContent(
     fromSourceId: Long? = null,
 ) {
     val allFinished = items.values.none { it is SearchItemResult.Loading }
-    val hasNoResults = items.isEmpty() || (allFinished && items.values.none {
-        it is SearchItemResult.Success && it.result.isNotEmpty()
-    })
+    val hasNoResults = items.isEmpty() || (
+        allFinished && items.values.none {
+            it is SearchItemResult.Success && it.result.isNotEmpty()
+        }
+        )
 
     if (hasNoResults) {
         EmptyScreen(
