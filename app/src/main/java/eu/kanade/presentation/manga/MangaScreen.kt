@@ -374,7 +374,7 @@ private suspend fun fetchSimilarMangas(manga: Manga, attempt: Int = 1): SimilarS
 
         val recSources = listOf(
             AniListPagingSource(manga),
-            MyAnimeListPagingSource(manga),
+            // MyAnimeListPagingSource(manga),
             MangaUpdatesSimilarPagingSource(manga),
         )
 

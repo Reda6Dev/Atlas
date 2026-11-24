@@ -29,6 +29,7 @@ class MyAnimeListPagingSource(manga: Manga) : TrackerRecommendationPagingSource(
         get() = trackerManager.myAnimeList.id
 
     override suspend fun getRecsById(id: String): List<SManga> {
+        if (!ENABLE_MAL) return emptyList()
         val apiUrl = endpoint.toHttpUrl()
             .newBuilder()
             .addPathSegment("manga")
@@ -77,5 +78,9 @@ class MyAnimeListPagingSource(manga: Manga) : TrackerRecommendationPagingSource(
                 .parseAs<JsonObject>()
         }
         return getRecsById(data["data"]!!.jsonArray.first().jsonObject["mal_id"]!!.jsonPrimitive.content)
+    }
+
+    companion object {
+        private const val ENABLE_MAL = false
     }
 }
