@@ -1,5 +1,4 @@
-package eu.kanade.tachiyomi.ui.home
-
+import android.view.ViewConfiguration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -53,10 +52,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -103,6 +107,7 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.math.abs
 
 object HomeScreen : Screen() {
 
@@ -153,6 +158,58 @@ object HomeScreen : Screen() {
         val moreScreenModel = rememberScreenModel { MoreScreenModel() }
         val downloadQueueState by moreScreenModel.downloadQueueState.collectAsState()
 
+        val layoutDirection = LocalLayoutDirection.current
+        val density = LocalDensity.current
+        val touchSlop = ViewConfiguration.get(LocalContext.current).scaledTouchSlop.toFloat()
+        val edgeWidthPx = with(density) { 24.dp.toPx() }
+
+        val edgeSwipeModifier = Modifier.pointerInput(layoutDirection, drawerState.isOpen) {
+            if (drawerState.isOpen) return@pointerInput
+            awaitPointerEventScope {
+                while (true) {
+                    val downEvent = awaitPointerEvent(PointerEventPass.Initial)
+                    val down = downEvent.changes.firstOrNull() ?: continue
+                    val startX = down.position.x
+                    val startY = down.position.y
+
+                    val isFromEdge = when (layoutDirection) {
+                        LayoutDirection.Rtl -> startX >= size.width - edgeWidthPx
+                        LayoutDirection.Ltr -> startX <= edgeWidthPx
+                    }
+
+                    if (!isFromEdge) continue
+
+                    var isEdgeDragInwards = false
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        val pointer = event.changes.firstOrNull { it.id == down.id } ?: break
+                        if (!pointer.pressed) break
+
+                        val dx = pointer.position.x - startX
+                        val dy = pointer.position.y - startY
+
+                        val dragInwardsPx = when (layoutDirection) {
+                            LayoutDirection.Rtl -> -dx
+                            LayoutDirection.Ltr -> dx
+                        }
+
+                        if (dragInwardsPx > touchSlop && dragInwardsPx > abs(dy)) {
+                            isEdgeDragInwards = true
+                            pointer.consume()
+                        }
+
+                        if (isEdgeDragInwards) {
+                            pointer.consume()
+                        }
+                    }
+
+                    if (isEdgeDragInwards) {
+                        scope.launch { drawerState.open() }
+                    }
+                }
+            }
+        }
+
         TabNavigator(
             tab = HomeTab,
             key = TabNavigatorKey,
@@ -163,6 +220,7 @@ object HomeScreen : Screen() {
             ) {
                 ModalNavigationDrawer(
                     drawerState = drawerState,
+                    gesturesEnabled = drawerState.isOpen,
                     drawerContent = {
                         AppNavigationDrawerSheet(
                             downloadQueueStateProvider = { downloadQueueState },
@@ -183,6 +241,7 @@ object HomeScreen : Screen() {
                     },
                 ) {
                     Scaffold(
+                        modifier = edgeSwipeModifier,
                         startBar = {
                             if (isTabletUi()) {
                                 NavigationRail {
