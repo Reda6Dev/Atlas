@@ -68,10 +68,11 @@ fun Screen.sourcesTab(
                 state = state,
                 contentPadding = contentPadding,
                 onClickItem = { source, listing ->
+                    val defaultQuery = if (source.supportsLatest) tachiyomi.domain.source.interactor.GetRemoteManga.QUERY_LATEST else listing.query
                     // SY --> Direct Catalog Navigation
                     val screen = when {
                         smartSearchConfig != null -> SmartSearchScreen(source.id, smartSearchConfig)
-                        else -> BrowseSourceScreen(source.id, listing.query)
+                        else -> BrowseSourceScreen(source.id, defaultQuery)
                     }
                     navigator.push(screen)
                     // SY <--
