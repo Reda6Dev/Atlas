@@ -1,3 +1,5 @@
+package eu.kanade.tachiyomi.ui.home
+
 import android.view.ViewConfiguration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -5,7 +7,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -104,7 +105,7 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.NavigationRail
 import tachiyomi.presentation.core.components.material.Scaffold
-import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.theme.primaryTextColor
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.math.abs
@@ -477,7 +478,7 @@ object HomeScreen : Screen() {
                     Icon(
                         painter = tab.options.icon!!,
                         contentDescription = tab.options.title,
-                        tint = if (isSelected) tachiyomi.presentation.core.theme.primaryTextColor() else inactiveColor,
+                        tint = if (isSelected) primaryTextColor() else inactiveColor,
                         modifier = Modifier.size(24.dp),
                     )
                 }
@@ -489,7 +490,7 @@ object HomeScreen : Screen() {
                     style = TextStyle(
                         fontSize = 11.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        color = if (isSelected) tachiyomi.presentation.core.theme.primaryTextColor() else inactiveColor,
+                        color = if (isSelected) primaryTextColor() else inactiveColor,
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
