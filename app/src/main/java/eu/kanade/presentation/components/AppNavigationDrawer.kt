@@ -57,9 +57,11 @@ fun AppNavigationDrawerSheet(
     modifier: Modifier = Modifier,
 ) {
     val uriHandler = LocalUriHandler.current
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val drawerWidth = (configuration.screenWidthDp.dp * 0.78f).coerceAtMost(320.dp)
 
     ModalDrawerSheet(
-        modifier = modifier.width(320.dp),
+        modifier = modifier.width(drawerWidth),
         drawerContainerColor = MaterialTheme.colorScheme.surface,
     ) {
         ScrollbarLazyColumn(
