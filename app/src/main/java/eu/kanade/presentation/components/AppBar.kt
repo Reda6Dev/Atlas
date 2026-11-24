@@ -148,7 +148,7 @@ fun AppBar(
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.statusBars)
-            .padding(top = 22.dp),
+            .padding(top = 4.dp),
     ) {
         CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
             TopAppBar(
@@ -160,7 +160,7 @@ fun AppBar(
                         IconButton(
                             onClick = onCancelActionMode,
                             modifier = Modifier
-                                .size(44.dp)
+                                .size(40.dp)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
@@ -168,6 +168,7 @@ fun AppBar(
                             Icon(
                                 imageVector = Icons.Outlined.Close,
                                 contentDescription = stringResource(MR.strings.action_cancel),
+                                modifier = Modifier.size(20.dp),
                             )
                         }
                     } else {
@@ -175,7 +176,7 @@ fun AppBar(
                             IconButton(
                                 onClick = it,
                                 modifier = Modifier
-                                    .size(44.dp)
+                                    .size(40.dp)
                                     .clip(CircleShape)
                                     .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                                     .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
@@ -253,7 +254,7 @@ fun AppBarActions(
                         onClick = it.onClick,
                         enabled = it.enabled,
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(40.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
@@ -262,6 +263,7 @@ fun AppBarActions(
                             imageVector = it.icon,
                             tint = it.iconTint ?: LocalContentColor.current,
                             contentDescription = it.title,
+                            modifier = Modifier.size(20.dp),
                         )
                     }
                 }
@@ -282,7 +284,7 @@ fun AppBarActions(
                     IconButton(
                         onClick = { showMenu = !showMenu },
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(40.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
@@ -290,6 +292,7 @@ fun AppBarActions(
                         Icon(
                             Icons.Outlined.MoreVert,
                             contentDescription = stringResource(MR.strings.action_menu_overflow_description),
+                            modifier = Modifier.size(20.dp),
                         )
                     }
                 }
@@ -425,7 +428,7 @@ fun SearchToolbar(
                                 IconButton(
                                     onClick = onClick,
                                     modifier = Modifier
-                                        .size(44.dp)
+                                        .size(40.dp)
                                         .clip(CircleShape)
                                         .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                                         .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
@@ -433,6 +436,7 @@ fun SearchToolbar(
                                     Icon(
                                         Icons.Outlined.Search,
                                         contentDescription = stringResource(MR.strings.action_search),
+                                        modifier = Modifier.size(20.dp),
                                     )
                                 }
                             }
@@ -453,7 +457,7 @@ fun SearchToolbar(
                                         focusRequester.requestFocus()
                                     },
                                     modifier = Modifier
-                                        .size(44.dp)
+                                        .size(40.dp)
                                         .clip(CircleShape)
                                         .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                                         .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
@@ -461,6 +465,7 @@ fun SearchToolbar(
                                     Icon(
                                         Icons.Outlined.Close,
                                         contentDescription = stringResource(MR.strings.action_reset),
+                                        modifier = Modifier.size(20.dp),
                                     )
                                 }
                             }

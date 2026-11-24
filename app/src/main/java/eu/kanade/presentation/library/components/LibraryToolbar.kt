@@ -99,7 +99,7 @@ private fun LibraryRegularToolbar(
                 Text(
                     text = title.text,
                     maxLines = 1,
-                    fontSize = 34.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f, false),
                     overflow = TextOverflow.Ellipsis,

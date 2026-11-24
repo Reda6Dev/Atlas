@@ -190,7 +190,7 @@ private fun HomeTopAppBar(
         titleContent = {
             Text(
                 text = "الرئيسية",
-                fontSize = 34.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
             )
         },
@@ -202,28 +202,36 @@ private fun HomeTopAppBar(
                 IconButton(
                     onClick = onSearchClick,
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(40.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                         .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
                 ) {
-                    Icon(Icons.Default.Search, contentDescription = "بحث")
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = "بحث",
+                        modifier = Modifier.size(20.dp),
+                    )
                 }
                 IconButton(
                     onClick = onOpenSourceSettings,
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(40.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                         .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
                 ) {
-                    Icon(Icons.Default.FilterList, contentDescription = "مصادر الشاشة الرئيسية")
+                    Icon(
+                        Icons.Default.FilterList,
+                        contentDescription = "مصادر الشاشة الرئيسية",
+                        modifier = Modifier.size(20.dp),
+                    )
                 }
                 Box {
                     IconButton(
                         onClick = { showMenu = true },
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(40.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
@@ -234,7 +242,11 @@ private fun HomeTopAppBar(
                                 strokeWidth = 2.dp,
                             )
                         } else {
-                            Icon(Icons.Default.MoreVert, contentDescription = "خيارات أكثر")
+                            Icon(
+                                Icons.Default.MoreVert,
+                                contentDescription = "خيارات أكثر",
+                                modifier = Modifier.size(20.dp),
+                            )
                         }
                     }
 
