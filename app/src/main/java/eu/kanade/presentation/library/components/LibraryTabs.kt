@@ -46,7 +46,16 @@ internal fun LibraryTabs(
     val outlineVariant = MaterialTheme.colorScheme.outlineVariant
     val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
 
+    val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
+
+    androidx.compose.runtime.LaunchedEffect(currentPageIndex) {
+        if (categories.isNotEmpty() && currentPageIndex in categories.indices) {
+            lazyListState.animateScrollToItem(currentPageIndex)
+        }
+    }
+
     LazyRow(
+        state = lazyListState,
         modifier = Modifier
             .zIndex(2f)
             .height(38.dp),
