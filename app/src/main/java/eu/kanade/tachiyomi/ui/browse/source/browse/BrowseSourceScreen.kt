@@ -328,7 +328,8 @@ data class BrowseSourceScreen(
                 columns = when (screenModel.displayMode) {
                     tachiyomi.domain.library.model.LibraryDisplayMode.CoverOnlyGrid -> androidx.compose.foundation.lazy.grid.GridCells.Fixed(3)
                     tachiyomi.domain.library.model.LibraryDisplayMode.ComfortableGrid,
-                    tachiyomi.domain.library.model.LibraryDisplayMode.CompactGrid -> androidx.compose.foundation.lazy.grid.GridCells.Fixed(2)
+                    tachiyomi.domain.library.model.LibraryDisplayMode.CompactGrid,
+                    -> androidx.compose.foundation.lazy.grid.GridCells.Fixed(2)
                     else -> screenModel.getColumnsPreference(LocalConfiguration.current.orientation)
                 },
                 // SY -->

@@ -71,7 +71,7 @@ fun TabbedScreen(
                 titleContent = {
                     Text(
                         text = stringResource(titleRes),
-                        fontSize = 22.sp,
+                        fontSize = 34.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
