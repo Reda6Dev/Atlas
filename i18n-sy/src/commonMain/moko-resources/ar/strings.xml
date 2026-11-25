@@ -644,4 +644,11 @@
     <string name="ui_scale_preview_title">سولو ليفلينج</string>
     <string name="ui_scale_preview_badge">الفصل 182</string>
     <string name="ui_scale_preview_button">اقرأ الآن</string>
+
+    <!-- Default Categories -->
+    <string name="default_category_read">تمت قراءته</string>
+    <string name="default_category_plan_to_read">أرغب بقراءته</string>
+    <string name="default_category_reading">أقرأه حاليًا</string>
+    <string name="default_category_on_hold">أكمله لاحقًا</string>
+    <string name="default_category_dropped">لا أرغب بقراءته</string>
 </resources>

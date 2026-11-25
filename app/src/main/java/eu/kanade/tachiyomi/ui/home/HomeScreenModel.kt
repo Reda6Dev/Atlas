@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.home
 
+import android.app.Application
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.source.service.SourcePreferences
@@ -16,10 +17,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mihon.domain.manga.model.toDomainManga
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -47,6 +50,7 @@ class HomeScreenModel(
     private val getCategories: tachiyomi.domain.category.interactor.GetCategories = Injekt.get(),
     private val setMangaCategories: tachiyomi.domain.category.interactor.SetMangaCategories = Injekt.get(),
     private val getManga: tachiyomi.domain.manga.interactor.GetManga = Injekt.get(),
+    private val initializeDefaultCategories: tachiyomi.domain.category.interactor.InitializeDefaultCategories = Injekt.get(),
 ) : StateScreenModel<HomeScreenModel.State>(
     State(displayMode = uiPreferences.homeDisplayMode.get()),
 ) {
@@ -105,6 +109,17 @@ class HomeScreenModel(
                     checkAndRegisterNewSources()
                 }
             }
+        }
+        screenModelScope.launchIO {
+            val context = Injekt.get<Application>()
+            val defaultNames = listOf(
+                context.stringResource(SYMR.strings.default_category_read),
+                context.stringResource(SYMR.strings.default_category_plan_to_read),
+                context.stringResource(SYMR.strings.default_category_reading),
+                context.stringResource(SYMR.strings.default_category_on_hold),
+                context.stringResource(SYMR.strings.default_category_dropped),
+            )
+            initializeDefaultCategories.await(defaultNames)
         }
         loadData()
     }

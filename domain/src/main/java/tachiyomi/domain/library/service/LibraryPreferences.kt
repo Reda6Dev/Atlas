@@ -34,6 +34,8 @@ class LibraryPreferences(
 
     val landscapeColumns: Preference<Int> = preferenceStore.getInt("pref_library_columns_landscape_key", 0)
 
+    val defaultCategoriesInitialized: Preference<Boolean> = preferenceStore.getBoolean("defaultCategoriesInitialized", false)
+
     val lastUpdatedTimestamp: Preference<Long> = preferenceStore.getLong(
         Preference.appStateKey("library_update_last_timestamp"),
         0L,
