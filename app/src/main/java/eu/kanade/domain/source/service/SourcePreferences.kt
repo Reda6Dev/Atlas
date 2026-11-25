@@ -29,6 +29,10 @@ class SourcePreferences(
 
     val homeSources: Preference<Set<String>> = preferenceStore.getStringSet("pref_home_sources", emptySet())
 
+    val homeKnownSources: Preference<Set<String>> = preferenceStore.getStringSet("home_known_sources", emptySet())
+
+    val homeKnownSourcesInitialized: Preference<Boolean> = preferenceStore.getBoolean("home_known_sources_initialized", false)
+
     val incognitoExtensions: Preference<Set<String>> = preferenceStore.getStringSet("incognito_extensions", emptySet())
 
     val pinnedSources: Preference<Set<String>> = preferenceStore.getStringSet("pinned_catalogues", emptySet())

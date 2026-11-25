@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -87,7 +88,46 @@ class HomeScreenModel(
     }
 
     init {
+        screenModelScope.launchIO {
+            sourceManager.isInitialized.collectLatest { isInit: Boolean ->
+                if (isInit) {
+                    checkAndRegisterNewSources()
+                }
+            }
+        }
         loadData()
+    }
+
+    private suspend fun checkAndRegisterNewSources() {
+        val enabledLangs = sourcePreferences.enabledLanguages.get()
+        val disabledIds = sourcePreferences.disabledSources.get()
+
+        val allVisibleSourceIds = sourceManager.getVisibleOnlineSources()
+            .filterIsInstance<CatalogueSource>()
+            .filter { it.lang in enabledLangs || "all" in enabledLangs }
+            .filterNot { it.id.toString() in disabledIds }
+            .map { it.id.toString() }
+            .toSet()
+
+        val isKnownInit = sourcePreferences.homeKnownSourcesInitialized.get()
+        val knownSources = sourcePreferences.homeKnownSources.get()
+
+        if (!isKnownInit) {
+            sourcePreferences.homeKnownSources.set(allVisibleSourceIds)
+            sourcePreferences.homeKnownSourcesInitialized.set(true)
+        } else {
+            val newSources = allVisibleSourceIds.filterNot { it in knownSources }
+            if (newSources.isNotEmpty()) {
+                val currentHomeSources = sourcePreferences.homeSources.get()
+                val updatedHomeSources = if (currentHomeSources.contains("NONE")) {
+                    newSources.toSet()
+                } else {
+                    currentHomeSources + newSources
+                }
+                sourcePreferences.homeSources.set(updatedHomeSources)
+                sourcePreferences.homeKnownSources.set(knownSources + newSources)
+            }
+        }
     }
 
     fun selectTab(tab: HomeTabOption) {
