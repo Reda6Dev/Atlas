@@ -29,6 +29,8 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -57,6 +59,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -132,6 +135,7 @@ import exh.ui.metadata.adapters.PururinDescription
 import exh.ui.metadata.adapters.TsuminoDescription
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mihon.domain.manga.model.toDomainManga
 import tachiyomi.data.source.NoResultsException
@@ -651,7 +655,8 @@ private fun MangaScreenSmallImpl(
     onInvertSelection: () -> Unit,
 ) {
     val chapterListState = rememberLazyListState()
-    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    val pagerState = rememberPagerState { 2 }
+    val coroutineScope = rememberCoroutineScope()
 
     val (chapters, listItem, isAnySelected) = remember(state) {
         Triple(
@@ -733,12 +738,16 @@ private fun MangaScreenSmallImpl(
                     backgroundAlphaProvider = { backgroundAlpha },
                 )
                 PrimaryTabRow(
-                    selectedTabIndex = selectedTab,
+                    selectedTabIndex = pagerState.currentPage,
                     containerColor = MaterialTheme.colorScheme.background,
                 ) {
                     Tab(
-                        selected = selectedTab == 0,
-                        onClick = { selectedTab = 0 },
+                        selected = pagerState.currentPage == 0,
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(0)
+                            }
+                        },
                         text = {
                             Text(
                                 text = "التفاصيل",
@@ -747,8 +756,12 @@ private fun MangaScreenSmallImpl(
                         },
                     )
                     Tab(
-                        selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
+                        selected = pagerState.currentPage == 1,
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(1)
+                            }
+                        },
                         text = {
                             Text(
                                 text = "الفصول (${chapters.size})",
@@ -786,183 +799,188 @@ private fun MangaScreenSmallImpl(
             indicatorPadding = PaddingValues(top = topPadding),
         ) {
             val layoutDirection = LocalLayoutDirection.current
-            if (selectedTab == 0) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(contentPadding)
-                        .verticalScroll(rememberScrollState()),
-                ) {
-                    MangaInfoBox(
-                        isTabletUi = false,
-                        appBarPadding = 0.dp,
-                        manga = state.manga,
-                        sourceName = remember { state.source.getNameForMangaInfo(state.mergedData?.sources) },
-                        isStubSource = remember { state.source is StubSource },
-                        onCoverClick = onCoverClicked,
-                        doSearch = onSearch,
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Card(
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+            ) { page ->
+                if (page == 0) {
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        ),
+                            .fillMaxSize()
+                            .padding(contentPadding)
+                            .verticalScroll(rememberScrollState()),
                     ) {
-                        MangaActionRow(
-                            favorite = state.manga.favorite,
-                            trackingCount = state.trackingCount,
-                            nextUpdate = nextUpdate,
-                            isUserIntervalMode = state.manga.fetchInterval < 0,
-                            onAddToLibraryClicked = onAddToLibraryClicked,
-                            onWebViewClicked = onWebViewClicked,
-                            onWebViewLongClicked = onWebViewLongClicked,
-                            onTrackingClicked = onTrackingClicked,
-                            onEditIntervalClicked = onEditIntervalClicked,
-                            onEditCategory = onEditCategoryClicked,
-                            onMergeClicked = onMergeClicked.takeUnless { state.showMergeInOverflow }
-                                .takeIf { state.manga.favorite && state.manga.source != MERGED_SOURCE_ID },
-                        )
-                    }
-                    Spacer(Modifier.height(12.dp))
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        ),
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            if (metadataDescription != null) {
-                                metadataDescription(
-                                    state,
-                                    onMetadataViewerClicked,
-                                ) {
-                                    onSearch(it, false)
-                                }
-                            }
-                            ExpandableMangaDescription(
-                                defaultExpandState = state.isFromSource,
-                                description = state.manga.description,
-                                tagsProvider = { state.manga.genre },
-                                notes = state.manga.notes,
-                                onTagSearch = onTagSearch,
-                                onCopyTagToClipboard = onCopyTagToClipboard,
-                                onEditNotes = onEditNotesClicked,
-                                doSearch = onSearch,
-                                searchMetadataChips = remember(state.meta, state.source.id, state.manga.genre) {
-                                    SearchMetadataChips(state.meta, state.source.id, state.manga.genre)
-                                },
-                            )
-                        }
-                    }
-
-                    Spacer(Modifier.height(12.dp))
-                    Surface(
-                        onClick = onContinueReading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .height(52.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(26.dp),
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.PlayArrow,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(24.dp),
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                text = resumeButtonText,
-                                style = TextStyle(
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                ),
-                            )
-                        }
-                    }
-
-                    SimilarMangaSection(
-                        manga = state.manga,
-                        onRecommendClicked = onRecommendClicked,
-                        onSearch = onSearch,
-                    )
-
-                    if (state.showMergeWithAnother && state.manga.favorite && state.manga.source != MERGED_SOURCE_ID) {
-                        Spacer(Modifier.height(12.dp))
-                        MangaInfoButtons(
-                            showRecommendsButton = false,
-                            showMergeWithAnotherButton = true,
-                            onRecommendClicked = onRecommendClicked,
-                            onMergeWithAnotherClicked = onMergeWithAnotherClicked,
-                        )
-                    }
-                    if (state.pagePreviewsState !is PagePreviewState.Unused && previewsRowCount > 0) {
-                        Spacer(Modifier.height(12.dp))
-                        PagePreviews(
-                            pagePreviewState = state.pagePreviewsState,
-                            onOpenPage = onOpenPagePreview,
-                            onMorePreviewsClicked = onMorePreviewsClicked,
-                            rowCount = previewsRowCount,
-                        )
-                    }
-                    Spacer(Modifier.height(16.dp))
-                }
-            } else {
-                VerticalFastScroller(
-                    listState = chapterListState,
-                    topContentPadding = topPadding,
-                    endContentPadding = contentPadding.calculateEndPadding(layoutDirection),
-                ) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxHeight(),
-                        state = chapterListState,
-                        contentPadding = PaddingValues(
-                            start = contentPadding.calculateStartPadding(layoutDirection),
-                            top = topPadding,
-                            end = contentPadding.calculateEndPadding(layoutDirection),
-                            bottom = contentPadding.calculateBottomPadding() + 24.dp,
-                        ),
-                    ) {
-                        item(
-                            key = MangaScreenItem.CHAPTER_HEADER,
-                            contentType = MangaScreenItem.CHAPTER_HEADER,
-                        ) {
-                            val missingChapterCount = remember(chapters) {
-                                chapters.map { it.chapter.chapterNumber }.missingChaptersCount()
-                            }
-                            ChapterHeader(
-                                enabled = !isAnySelected,
-                                chapterCount = chapters.size,
-                                missingChapterCount = missingChapterCount,
-                                onClick = onFilterClicked,
-                            )
-                        }
-
-                        sharedChapterItems(
+                        MangaInfoBox(
+                            isTabletUi = false,
+                            appBarPadding = 0.dp,
                             manga = state.manga,
-                            mergedData = state.mergedData,
-                            chapters = listItem,
-                            isAnyChapterSelected = chapters.fastAny { it.selected },
-                            chapterSwipeStartAction = chapterSwipeStartAction,
-                            chapterSwipeEndAction = chapterSwipeEndAction,
-                            alwaysShowReadingProgress = state.alwaysShowReadingProgress,
-                            onChapterClicked = onChapterClicked,
-                            onDownloadChapter = onDownloadChapter,
-                            onChapterSelected = onChapterSelected,
-                            onChapterSwipe = onChapterSwipe,
+                            sourceName = remember { state.source.getNameForMangaInfo(state.mergedData?.sources) },
+                            isStubSource = remember { state.source is StubSource },
+                            onCoverClick = onCoverClicked,
+                            doSearch = onSearch,
                         )
+                        Spacer(Modifier.height(8.dp))
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            ),
+                        ) {
+                            MangaActionRow(
+                                favorite = state.manga.favorite,
+                                trackingCount = state.trackingCount,
+                                nextUpdate = nextUpdate,
+                                isUserIntervalMode = state.manga.fetchInterval < 0,
+                                onAddToLibraryClicked = onAddToLibraryClicked,
+                                onWebViewClicked = onWebViewClicked,
+                                onWebViewLongClicked = onWebViewLongClicked,
+                                onTrackingClicked = onTrackingClicked,
+                                onEditIntervalClicked = onEditIntervalClicked,
+                                onEditCategory = onEditCategoryClicked,
+                                onMergeClicked = onMergeClicked.takeUnless { state.showMergeInOverflow }
+                                    .takeIf { state.manga.favorite && state.manga.source != MERGED_SOURCE_ID },
+                            )
+                        }
+                        Spacer(Modifier.height(12.dp))
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            ),
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                if (metadataDescription != null) {
+                                    metadataDescription(
+                                        state,
+                                        onMetadataViewerClicked,
+                                    ) {
+                                        onSearch(it, false)
+                                    }
+                                }
+                                ExpandableMangaDescription(
+                                    defaultExpandState = state.isFromSource,
+                                    description = state.manga.description,
+                                    tagsProvider = { state.manga.genre },
+                                    notes = state.manga.notes,
+                                    onTagSearch = onTagSearch,
+                                    onCopyTagToClipboard = onCopyTagToClipboard,
+                                    onEditNotes = onEditNotesClicked,
+                                    doSearch = onSearch,
+                                    searchMetadataChips = remember(state.meta, state.source.id, state.manga.genre) {
+                                        SearchMetadataChips(state.meta, state.source.id, state.manga.genre)
+                                    },
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+                        Surface(
+                            onClick = onContinueReading,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .height(52.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(26.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.PlayArrow,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.size(24.dp),
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = resumeButtonText,
+                                    style = TextStyle(
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                    ),
+                                )
+                            }
+                        }
+
+                        SimilarMangaSection(
+                            manga = state.manga,
+                            onRecommendClicked = onRecommendClicked,
+                            onSearch = onSearch,
+                        )
+
+                        if (state.showMergeWithAnother && state.manga.favorite && state.manga.source != MERGED_SOURCE_ID) {
+                            Spacer(Modifier.height(12.dp))
+                            MangaInfoButtons(
+                                showRecommendsButton = false,
+                                showMergeWithAnotherButton = true,
+                                onRecommendClicked = onRecommendClicked,
+                                onMergeWithAnotherClicked = onMergeWithAnotherClicked,
+                            )
+                        }
+                        if (state.pagePreviewsState !is PagePreviewState.Unused && previewsRowCount > 0) {
+                            Spacer(Modifier.height(12.dp))
+                            PagePreviews(
+                                pagePreviewState = state.pagePreviewsState,
+                                onOpenPage = onOpenPagePreview,
+                                onMorePreviewsClicked = onMorePreviewsClicked,
+                                rowCount = previewsRowCount,
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
+                } else {
+                    VerticalFastScroller(
+                        listState = chapterListState,
+                        topContentPadding = topPadding,
+                        endContentPadding = contentPadding.calculateEndPadding(layoutDirection),
+                    ) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxHeight(),
+                            state = chapterListState,
+                            contentPadding = PaddingValues(
+                                start = contentPadding.calculateStartPadding(layoutDirection),
+                                top = topPadding,
+                                end = contentPadding.calculateEndPadding(layoutDirection),
+                                bottom = contentPadding.calculateBottomPadding() + 24.dp,
+                            ),
+                        ) {
+                            item(
+                                key = MangaScreenItem.CHAPTER_HEADER,
+                                contentType = MangaScreenItem.CHAPTER_HEADER,
+                            ) {
+                                val missingChapterCount = remember(chapters) {
+                                    chapters.map { it.chapter.chapterNumber }.missingChaptersCount()
+                                }
+                                ChapterHeader(
+                                    enabled = !isAnySelected,
+                                    chapterCount = chapters.size,
+                                    missingChapterCount = missingChapterCount,
+                                    onClick = onFilterClicked,
+                                )
+                            }
+
+                            sharedChapterItems(
+                                manga = state.manga,
+                                mergedData = state.mergedData,
+                                chapters = listItem,
+                                isAnyChapterSelected = chapters.fastAny { it.selected },
+                                chapterSwipeStartAction = chapterSwipeStartAction,
+                                chapterSwipeEndAction = chapterSwipeEndAction,
+                                alwaysShowReadingProgress = state.alwaysShowReadingProgress,
+                                onChapterClicked = onChapterClicked,
+                                onDownloadChapter = onDownloadChapter,
+                                onChapterSelected = onChapterSelected,
+                                onChapterSwipe = onChapterSwipe,
+                            )
+                        }
                     }
                 }
             }
