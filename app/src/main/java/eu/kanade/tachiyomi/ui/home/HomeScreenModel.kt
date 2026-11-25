@@ -164,6 +164,22 @@ class HomeScreenModel(
         }
     }
 
+    fun reorderDialogSourceItems(fromIndex: Int, toIndex: Int) {
+        mutableState.update { state ->
+            val list = state.sourceDialogItems.toMutableList()
+            if (fromIndex in list.indices && toIndex in list.indices) {
+                val item = list.removeAt(fromIndex)
+                list.add(toIndex, item)
+            }
+            state.copy(sourceDialogItems = list)
+        }
+    }
+
+    fun moveDialogSourceItem(index: Int, moveUp: Boolean) {
+        val targetIndex = if (moveUp) index - 1 else index + 1
+        reorderDialogSourceItems(index, targetIndex)
+    }
+
     fun saveSourceSettingsDialog() {
         val selectedIds = state.value.sourceDialogItems
             .filter { it.isSelected }

@@ -72,6 +72,8 @@ object HomeTab : Tab {
             },
             onDisplayModeChange = { mode -> screenModel.setDisplayMode(mode) },
             onToggleDialogSource = { sourceId -> screenModel.toggleDialogSourceSelection(sourceId) },
+            onReorderDialogSource = { from, to -> screenModel.reorderDialogSourceItems(from, to) },
+            onMoveDialogSource = { index, moveUp -> screenModel.moveDialogSourceItem(index, moveUp) },
             onSaveSourceSettings = { screenModel.saveSourceSettingsDialog() },
             onDismissSourceSettings = { screenModel.dismissSourceSettingsDialog() },
             onTabSelected = { tab -> screenModel.selectTab(tab) },

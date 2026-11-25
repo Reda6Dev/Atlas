@@ -31,6 +31,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.geometry.Offset
@@ -38,7 +39,11 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.FilterList
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
@@ -98,6 +103,8 @@ fun HomeScreen(
     onSearchClick: () -> Unit,
     onDisplayModeChange: (LibraryDisplayMode) -> Unit,
     onToggleDialogSource: (Long) -> Unit,
+    onReorderDialogSource: (Int, Int) -> Unit,
+    onMoveDialogSource: (Int, Boolean) -> Unit,
     onSaveSourceSettings: () -> Unit,
     onDismissSourceSettings: () -> Unit,
     onTabSelected: (HomeTabOption) -> Unit,
@@ -241,6 +248,8 @@ fun HomeScreen(
                 HomeSourceSettingsDialog(
                     items = state.sourceDialogItems,
                     onToggleSource = onToggleDialogSource,
+                    onReorderSource = onReorderDialogSource,
+                    onMoveSource = onMoveDialogSource,
                     onSave = onSaveSourceSettings,
                     onDismiss = onDismissSourceSettings,
                 )
@@ -488,9 +497,16 @@ private fun HomeSourceFilterRow(
 private fun HomeSourceSettingsDialog(
     items: List<HomeSourceDialogItem>,
     onToggleSource: (Long) -> Unit,
+    onReorderSource: (Int, Int) -> Unit,
+    onMoveSource: (Int, Boolean) -> Unit,
     onSave: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val lazyListState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        onReorderSource(from.index, to.index)
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -502,33 +518,66 @@ private fun HomeSourceSettingsDialog(
         },
         text = {
             LazyColumn(
+                state = lazyListState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 320.dp),
+                    .heightIn(max = 360.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                items(
+                itemsIndexed(
                     items = items,
-                    key = { it.id },
-                ) { item ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onToggleSource(item.id) }
-                            .padding(horizontal = 8.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                    key = { _, item -> item.id },
+                ) { index, item ->
+                    ReorderableItem(
+                        state = reorderableState,
+                        key = item.id,
                     ) {
-                        Text(
-                            text = item.name,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                        )
-                        Checkbox(
-                            checked = item.isSelected,
-                            onCheckedChange = { onToggleSource(item.id) },
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                                .clickable { onToggleSource(item.id) }
+                                .padding(horizontal = 8.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            IconButton(
+                                onClick = { onMoveSource(index, true) },
+                                enabled = index > 0,
+                                modifier = Modifier.size(28.dp),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowUpward,
+                                    contentDescription = "رفع",
+                                    modifier = Modifier.size(16.dp),
+                                )
+                            }
+                            IconButton(
+                                onClick = { onMoveSource(index, false) },
+                                enabled = index < items.lastIndex,
+                                modifier = Modifier.size(28.dp),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDownward,
+                                    contentDescription = "خفض",
+                                    modifier = Modifier.size(16.dp),
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(4.dp))
+
+                            Text(
+                                text = item.name,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.weight(1f),
+                            )
+
+                            Checkbox(
+                                checked = item.isSelected,
+                                onCheckedChange = { onToggleSource(item.id) },
+                            )
+                        }
                     }
                 }
             }
