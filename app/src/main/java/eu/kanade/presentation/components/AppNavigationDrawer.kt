@@ -11,6 +11,7 @@ import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Storage
@@ -48,6 +49,7 @@ fun AppNavigationDrawerSheet(
     onClickHistory: () -> Unit,
     onClickDownloadQueue: () -> Unit,
     onClickCategories: () -> Unit,
+    onClickFavoriteCharacters: () -> Unit = {},
     onClickStats: () -> Unit,
     onClickDataAndStorage: () -> Unit,
     onClickSettings: () -> Unit,
@@ -144,6 +146,17 @@ fun AppNavigationDrawerSheet(
                     onPreferenceClick = {
                         onCloseDrawer()
                         onClickCategories()
+                    },
+                )
+            }
+
+            item {
+                TextPreferenceWidget(
+                    title = "شخصياتي المفضلة",
+                    icon = Icons.Outlined.Person,
+                    onPreferenceClick = {
+                        onCloseDrawer()
+                        onClickFavoriteCharacters()
                     },
                 )
             }

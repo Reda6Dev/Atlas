@@ -82,6 +82,7 @@ import eu.kanade.tachiyomi.ui.download.DownloadQueueScreen
 import eu.kanade.tachiyomi.ui.history.HistoryTab
 import eu.kanade.tachiyomi.ui.library.LibraryTab
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import eu.kanade.tachiyomi.ui.manga.character.FavoriteCharactersScreen
 import eu.kanade.tachiyomi.ui.more.MoreScreenModel
 import eu.kanade.tachiyomi.ui.more.MoreTab
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
@@ -232,6 +233,7 @@ object HomeScreen : Screen() {
                             onClickHistory = { navigator.push(HistoryTab) },
                             onClickDownloadQueue = { navigator.push(DownloadQueueScreen) },
                             onClickCategories = { navigator.push(CategoryScreen()) },
+                            onClickFavoriteCharacters = { navigator.push(FavoriteCharactersScreen()) },
                             onClickStats = { navigator.push(StatsScreen()) },
                             onClickDataAndStorage = { navigator.push(SettingsScreen(SettingsScreen.Destination.DataAndStorage)) },
                             onClickSettings = { navigator.push(SettingsScreen()) },
