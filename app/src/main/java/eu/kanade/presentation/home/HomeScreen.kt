@@ -26,6 +26,10 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
@@ -139,22 +143,65 @@ fun HomeScreen(
                     )
                 }
                 else -> {
-                    when (state.selectedTab) {
-                        HomeTabOption.LatestChapters -> {
-                            LatestChaptersTabContent(
-                                state = state,
-                                onRefresh = onRefresh,
-                                onLoadMore = onLoadMoreLatestChapters,
-                                onItemClick = onItemClick,
-                            )
+                    if (state.availableSources.isNotEmpty()) {
+                        val selectedIndex = state.availableSources.indexOfFirst { it.id == state.selectedSourceId }.coerceAtLeast(0)
+                        val sourcePagerState = rememberPagerState(initialPage = selectedIndex) { state.availableSources.size }
+
+                        LaunchedEffect(selectedIndex) {
+                            if (sourcePagerState.currentPage != selectedIndex && selectedIndex in state.availableSources.indices) {
+                                sourcePagerState.animateScrollToPage(selectedIndex)
+                            }
                         }
-                        HomeTabOption.DiscoverManga -> {
-                            DiscoverMangaTabContent(
-                                state = state,
-                                onRefresh = onRefresh,
-                                onLoadMore = onLoadMoreDiscover,
-                                onItemClick = onItemClick,
-                            )
+
+                        LaunchedEffect(sourcePagerState.currentPage) {
+                            val targetSourceId = state.availableSources.getOrNull(sourcePagerState.currentPage)?.id
+                            if (targetSourceId != state.selectedSourceId) {
+                                onSourceFilterSelected(targetSourceId)
+                            }
+                        }
+
+                        HorizontalPager(
+                            state = sourcePagerState,
+                            modifier = Modifier.fillMaxSize(),
+                            key = { page -> state.availableSources.getOrNull(page)?.id ?: -1L },
+                        ) {
+                            when (state.selectedTab) {
+                                HomeTabOption.LatestChapters -> {
+                                    LatestChaptersTabContent(
+                                        state = state,
+                                        onRefresh = onRefresh,
+                                        onLoadMore = onLoadMoreLatestChapters,
+                                        onItemClick = onItemClick,
+                                    )
+                                }
+                                HomeTabOption.DiscoverManga -> {
+                                    DiscoverMangaTabContent(
+                                        state = state,
+                                        onRefresh = onRefresh,
+                                        onLoadMore = onLoadMoreDiscover,
+                                        onItemClick = onItemClick,
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        when (state.selectedTab) {
+                            HomeTabOption.LatestChapters -> {
+                                LatestChaptersTabContent(
+                                    state = state,
+                                    onRefresh = onRefresh,
+                                    onLoadMore = onLoadMoreLatestChapters,
+                                    onItemClick = onItemClick,
+                                )
+                            }
+                            HomeTabOption.DiscoverManga -> {
+                                DiscoverMangaTabContent(
+                                    state = state,
+                                    onRefresh = onRefresh,
+                                    onLoadMore = onLoadMoreDiscover,
+                                    onItemClick = onItemClick,
+                                )
+                            }
                         }
                     }
                 }
@@ -374,7 +421,17 @@ private fun HomeSourceFilterRow(
     selectedSourceId: Long?,
     onSourceFilterSelected: (Long?) -> Unit,
 ) {
+    val lazyListState = rememberLazyListState()
+    val selectedIndex = availableSources.indexOfFirst { it.id == selectedSourceId }.coerceAtLeast(0)
+
+    LaunchedEffect(selectedIndex) {
+        if (availableSources.isNotEmpty() && selectedIndex in availableSources.indices) {
+            lazyListState.animateScrollToItem(selectedIndex)
+        }
+    }
+
     LazyRow(
+        state = lazyListState,
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
