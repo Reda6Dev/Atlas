@@ -120,7 +120,7 @@ object AnilistCharactersApi {
             throw AnilistNetworkException(e.message ?: "فشل الاتصال بـ AniList")
         }
 
-        val jsonObject = response.parseAs<JsonObject>()
+        val jsonObject = with(json) { response.parseAs<JsonObject>() }
         val mediaObj = jsonObject["data"]?.jsonObject?.get("Media")?.jsonObject
             ?: throw AnilistNetworkException("لم يتم العثور على العمل")
 
@@ -235,7 +235,7 @@ object AnilistCharactersApi {
             return@withIOContext emptyList()
         }
 
-        val jsonObject = response.parseAs<JsonObject>()
+        val jsonObject = with(json) { response.parseAs<JsonObject>() }
         val mediaList = jsonObject["data"]?.jsonObject?.get("Page")?.jsonObject?.get("media")?.jsonArray
             ?: return@withIOContext emptyList()
 
