@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.home
 import android.app.Application
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -51,6 +52,7 @@ class HomeScreenModel(
     private val setMangaCategories: tachiyomi.domain.category.interactor.SetMangaCategories = Injekt.get(),
     private val getManga: tachiyomi.domain.manga.interactor.GetManga = Injekt.get(),
     private val initializeDefaultCategories: tachiyomi.domain.category.interactor.InitializeDefaultCategories = Injekt.get(),
+    private val updateManga: UpdateManga = Injekt.get(),
 ) : StateScreenModel<HomeScreenModel.State>(
     State(displayMode = uiPreferences.homeDisplayMode.get()),
 ) {
@@ -625,7 +627,7 @@ class HomeScreenModel(
     fun openChangeCategoryDialog(mangaId: Long) {
         screenModelScope.launchIO {
             val manga = getManga.await(mangaId) ?: return@launchIO
-            val categories = getCategories.await()
+            val categories = getCategories.await().filterNot { it.isSystemCategory }
             val mangaCategories = getCategories.await(mangaId)
             val initialSelection = categories.map { category ->
                 if (mangaCategories.any { it.id == category.id }) {
@@ -643,6 +645,9 @@ class HomeScreenModel(
     fun setMangaCategories(manga: tachiyomi.domain.manga.model.Manga, categories: List<Long>) {
         screenModelScope.launchIO {
             setMangaCategories.await(manga.id, categories)
+            if (!manga.favorite) {
+                updateManga.awaitUpdateFavorite(manga.id, true)
+            }
             closeDialog()
         }
     }

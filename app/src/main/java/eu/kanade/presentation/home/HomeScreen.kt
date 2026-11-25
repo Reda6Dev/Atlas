@@ -967,7 +967,6 @@ private fun GridCardItem(
             MangaCover.Book(
                 modifier = Modifier.fillMaxWidth(),
                 data = domainCover,
-                onClick = onClick,
             )
         }
 
