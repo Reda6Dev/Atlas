@@ -655,8 +655,9 @@ private fun MangaScreenSmallImpl(
     onInvertSelection: () -> Unit,
 ) {
     val chapterListState = rememberLazyListState()
-    val pagerState = rememberPagerState { 2 }
+    val pagerState = rememberPagerState { 3 }
     val coroutineScope = rememberCoroutineScope()
+    val navigator = LocalNavigator.current
 
     val (chapters, listItem, isAnySelected) = remember(state) {
         Triple(
@@ -765,6 +766,20 @@ private fun MangaScreenSmallImpl(
                         text = {
                             Text(
                                 text = "الفصول (${chapters.size})",
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                        },
+                    )
+                    Tab(
+                        selected = pagerState.currentPage == 2,
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(2)
+                            }
+                        },
+                        text = {
+                            Text(
+                                text = "الشخصيات",
                                 style = MaterialTheme.typography.titleMedium,
                             )
                         },
@@ -936,7 +951,7 @@ private fun MangaScreenSmallImpl(
                         }
                         Spacer(Modifier.height(16.dp))
                     }
-                } else {
+                } else if (page == 1) {
                     VerticalFastScroller(
                         listState = chapterListState,
                         topContentPadding = topPadding,
@@ -982,6 +997,14 @@ private fun MangaScreenSmallImpl(
                             )
                         }
                     }
+                } else {
+                    eu.kanade.presentation.manga.components.MangaCharactersTab(
+                        manga = state.manga,
+                        onCharacterClick = { character ->
+                            navigator?.push(eu.kanade.tachiyomi.ui.manga.character.CharacterDetailsScreen(character, state.manga.title))
+                        },
+                        modifier = Modifier.padding(top = topPadding),
+                    )
                 }
             }
         }
