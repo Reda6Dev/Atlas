@@ -77,6 +77,7 @@ import eu.kanade.tachiyomi.ui.home.HomeSourceFilter
 import eu.kanade.tachiyomi.ui.home.HomeTabOption
 import eu.kanade.tachiyomi.ui.home.model.HomeItem
 import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.primaryTextColor
 import tachiyomi.domain.manga.model.MangaCover as DomainMangaCover
@@ -577,60 +578,67 @@ private fun LatestChaptersTabContent(
         else -> 3
     }
 
-    when {
-        state.isLoadingLatest && state.latestChaptersItems.isEmpty() -> {
-            LoadingScreen()
-        }
-        state.latestError != null && state.latestChaptersItems.isEmpty() -> {
-            HomeErrorScreen(
-                errorMessage = state.latestError,
-                onRetry = onRefresh,
-            )
-        }
-        else -> {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(columnsCount),
-                state = gridState,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                if (state.latestError != null) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        HomeErrorBanner(
-                            message = state.latestError,
-                            onRetry = onRefresh,
-                        )
+    PullRefresh(
+        refreshing = state.isRefreshing,
+        enabled = true,
+        onRefresh = onRefresh,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        when {
+            state.isLoadingLatest && state.latestChaptersItems.isEmpty() -> {
+                LoadingScreen()
+            }
+            state.latestError != null && state.latestChaptersItems.isEmpty() -> {
+                HomeErrorScreen(
+                    errorMessage = state.latestError,
+                    onRetry = onRefresh,
+                )
+            }
+            else -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(columnsCount),
+                    state = gridState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    if (state.latestError != null) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            HomeErrorBanner(
+                                message = state.latestError,
+                                onRetry = onRefresh,
+                            )
+                        }
                     }
-                }
 
-                items(
-                    items = state.latestChaptersItems,
-                    key = { item -> getItemKey(item) },
-                ) { item ->
-                    if (state.displayMode == LibraryDisplayMode.List) {
-                        ListItemCard(
-                            item = item,
-                            onClick = { onItemClick(item) },
-                        )
-                    } else {
-                        GridCardItem(
-                            item = item,
-                            onClick = { onItemClick(item) },
-                        )
+                    items(
+                        items = state.latestChaptersItems,
+                        key = { item -> getItemKey(item) },
+                    ) { item ->
+                        if (state.displayMode == LibraryDisplayMode.List) {
+                            ListItemCard(
+                                item = item,
+                                onClick = { onItemClick(item) },
+                            )
+                        } else {
+                            GridCardItem(
+                                item = item,
+                                onClick = { onItemClick(item) },
+                            )
+                        }
                     }
-                }
 
-                if (state.isLoadingMoreLatest) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
+                    if (state.isLoadingMoreLatest) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator()
+                            }
                         }
                     }
                 }
@@ -668,66 +676,74 @@ private fun DiscoverMangaTabContent(
         else -> 3
     }
 
-    when {
-        state.isLoadingDiscover && state.discoverItems.isEmpty() -> {
-            LoadingScreen()
-        }
-        state.discoverError != null && state.discoverItems.isEmpty() -> {
-            HomeErrorScreen(
-                errorMessage = state.discoverError,
-                onRetry = onRefresh,
-            )
-        }
-        else -> {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(columnsCount),
-                state = gridState,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                if (state.discoverError != null) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        HomeErrorBanner(
-                            message = state.discoverError,
-                            onRetry = onRefresh,
-                        )
+    PullRefresh(
+        refreshing = state.isRefreshing,
+        enabled = true,
+        onRefresh = onRefresh,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        when {
+            state.isLoadingDiscover && state.discoverItems.isEmpty() -> {
+                LoadingScreen()
+            }
+            state.discoverError != null && state.discoverItems.isEmpty() -> {
+                HomeErrorScreen(
+                    errorMessage = state.discoverError,
+                    onRetry = onRefresh,
+                )
+            }
+            else -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(columnsCount),
+                    state = gridState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    if (state.discoverError != null) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            HomeErrorBanner(
+                                message = state.discoverError,
+                                onRetry = onRefresh,
+                            )
+                        }
                     }
-                }
 
-                items(
-                    items = state.discoverItems,
-                    key = { item -> getItemKey(item) },
-                ) { item ->
-                    if (state.displayMode == LibraryDisplayMode.List) {
-                        ListItemCard(
-                            item = item,
-                            onClick = { onItemClick(item) },
-                        )
-                    } else {
-                        GridCardItem(
-                            item = item,
-                            onClick = { onItemClick(item) },
-                        )
+                    items(
+                        items = state.discoverItems,
+                        key = { item -> getItemKey(item) },
+                    ) { item ->
+                        if (state.displayMode == LibraryDisplayMode.List) {
+                            ListItemCard(
+                                item = item,
+                                onClick = { onItemClick(item) },
+                            )
+                        } else {
+                            GridCardItem(
+                                item = item,
+                                onClick = { onItemClick(item) },
+                            )
+                        }
                     }
-                }
 
-                if (state.isLoadingMoreDiscover) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
+                    if (state.isLoadingMoreDiscover) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator()
+                            }
                         }
                     }
                 }
             }
         }
     }
+}
 }
 
 private fun getItemKey(item: HomeItem): String {
