@@ -29,6 +29,8 @@ class SourcePreferences(
 
     val homeSources: Preference<Set<String>> = preferenceStore.getStringSet("pref_home_sources", emptySet())
 
+    val homeSourcesOrder: Preference<String> = preferenceStore.getString("pref_home_sources_order", "")
+
     val homeKnownSources: Preference<Set<String>> = preferenceStore.getStringSet("home_known_sources", emptySet())
 
     val homeKnownSourcesInitialized: Preference<Boolean> = preferenceStore.getBoolean("home_known_sources_initialized", false)

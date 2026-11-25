@@ -68,6 +68,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -89,8 +90,7 @@ import eu.kanade.tachiyomi.ui.home.HomeSourceDialogItem
 import eu.kanade.tachiyomi.ui.home.HomeSourceFilter
 import eu.kanade.tachiyomi.ui.home.HomeTabOption
 import eu.kanade.tachiyomi.ui.home.model.HomeItem
-import sh.calvin.reorderable.ReorderableItem
-import sh.calvin.reorderable.rememberReorderableLazyListState
+import kotlinx.coroutines.launch
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.screens.LoadingScreen
@@ -106,7 +106,6 @@ fun HomeScreen(
     onSearchClick: () -> Unit,
     onDisplayModeChange: (LibraryDisplayMode) -> Unit,
     onToggleDialogSource: (Long) -> Unit,
-    onReorderDialogSource: (Int, Int) -> Unit,
     onMoveDialogSource: (Int, Boolean) -> Unit,
     onSaveSourceSettings: () -> Unit,
     onDismissSourceSettings: () -> Unit,
@@ -254,7 +253,6 @@ fun HomeScreen(
                 HomeSourceSettingsDialog(
                     items = state.sourceDialogItems,
                     onToggleSource = onToggleDialogSource,
-                    onReorderSource = onReorderDialogSource,
                     onMoveSource = onMoveDialogSource,
                     onSave = onSaveSourceSettings,
                     onDismiss = onDismissSourceSettings,
@@ -517,15 +515,12 @@ private fun HomeSourceFilterRow(
 private fun HomeSourceSettingsDialog(
     items: List<HomeSourceDialogItem>,
     onToggleSource: (Long) -> Unit,
-    onReorderSource: (Int, Int) -> Unit,
     onMoveSource: (Int, Boolean) -> Unit,
     onSave: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
-    val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        onReorderSource(from.index, to.index)
-    }
+    val coroutineScope = rememberCoroutineScope()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -548,56 +543,65 @@ private fun HomeSourceSettingsDialog(
                     items = items,
                     key = { _, item -> item.id },
                 ) { index, item ->
-                    ReorderableItem(
-                        state = reorderableState,
-                        key = item.id,
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                            .clickable { onToggleSource(item.id) }
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
-                                .clickable { onToggleSource(item.id) }
-                                .padding(horizontal = 8.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                        IconButton(
+                            onClick = {
+                                onMoveSource(index, true)
+                                coroutineScope.launch {
+                                    if (index > 0) {
+                                        lazyListState.animateScrollToItem(index - 1)
+                                    }
+                                }
+                            },
+                            enabled = index > 0,
+                            modifier = Modifier.size(28.dp),
                         ) {
-                            IconButton(
-                                onClick = { onMoveSource(index, true) },
-                                enabled = index > 0,
-                                modifier = Modifier.size(28.dp),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ArrowUpward,
-                                    contentDescription = "رفع",
-                                    modifier = Modifier.size(16.dp),
-                                )
-                            }
-                            IconButton(
-                                onClick = { onMoveSource(index, false) },
-                                enabled = index < items.lastIndex,
-                                modifier = Modifier.size(28.dp),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ArrowDownward,
-                                    contentDescription = "خفض",
-                                    modifier = Modifier.size(16.dp),
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(4.dp))
-
-                            Text(
-                                text = item.name,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                modifier = Modifier.weight(1f),
-                            )
-
-                            Checkbox(
-                                checked = item.isSelected,
-                                onCheckedChange = { onToggleSource(item.id) },
+                            Icon(
+                                imageVector = Icons.Default.ArrowUpward,
+                                contentDescription = "رفع",
+                                modifier = Modifier.size(16.dp),
                             )
                         }
+                        IconButton(
+                            onClick = {
+                                onMoveSource(index, false)
+                                coroutineScope.launch {
+                                    if (index < items.lastIndex) {
+                                        lazyListState.animateScrollToItem(index + 1)
+                                    }
+                                }
+                            },
+                            enabled = index < items.lastIndex,
+                            modifier = Modifier.size(28.dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowDownward,
+                                contentDescription = "خفض",
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(4.dp))
+
+                        Text(
+                            text = item.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.weight(1f),
+                        )
+
+                        Checkbox(
+                            checked = item.isSelected,
+                            onCheckedChange = { onToggleSource(item.id) },
+                        )
                     }
                 }
             }

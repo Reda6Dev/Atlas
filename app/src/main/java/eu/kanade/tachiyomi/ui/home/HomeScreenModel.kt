@@ -189,6 +189,8 @@ class HomeScreenModel(
         val enabledLangs = sourcePreferences.enabledLanguages.get()
         val disabledIds = sourcePreferences.disabledSources.get()
         val homeSelectedSourceIds = sourcePreferences.homeSources.get()
+        val savedOrderStr = sourcePreferences.homeSourcesOrder.get()
+        val savedOrderList = if (savedOrderStr.isBlank()) emptyList() else savedOrderStr.split(",")
 
         val allAvailableSources = sourceManager.getVisibleOnlineSources()
             .filterIsInstance<CatalogueSource>()
@@ -198,7 +200,22 @@ class HomeScreenModel(
                 sourceManager.getVisibleOnlineSources().filterIsInstance<CatalogueSource>()
             }
 
-        val dialogItems = allAvailableSources.map { source ->
+        val sourceMap = allAvailableSources.associateBy { it.id.toString() }
+        val orderedSources = mutableListOf<CatalogueSource>()
+
+        savedOrderList.forEach { id ->
+            val src = sourceMap[id]
+            if (src != null && src !in orderedSources) {
+                orderedSources.add(src)
+            }
+        }
+        allAvailableSources.forEach { src ->
+            if (src !in orderedSources) {
+                orderedSources.add(src)
+            }
+        }
+
+        val dialogItems = orderedSources.map { source ->
             val isSelected = if (homeSelectedSourceIds.isEmpty()) {
                 true
             } else if (homeSelectedSourceIds.contains("NONE")) {
@@ -247,13 +264,12 @@ class HomeScreenModel(
     }
 
     fun saveSourceSettingsDialog() {
-        val selectedIds = state.value.sourceDialogItems
-            .filter { it.isSelected }
-            .map { it.id.toString() }
-            .toSet()
+        val selectedItems = state.value.sourceDialogItems.filter { it.isSelected }
+        val selectedOrderedIds = selectedItems.map { it.id.toString() }
+        val allDialogOrderedIds = state.value.sourceDialogItems.map { it.id.toString() }
 
-        val toSave = if (selectedIds.isEmpty()) setOf("NONE") else selectedIds
-        sourcePreferences.homeSources.set(toSave)
+        sourcePreferences.homeSourcesOrder.set(allDialogOrderedIds.joinToString(","))
+        sourcePreferences.homeSources.set(if (selectedOrderedIds.isEmpty()) setOf("NONE") else selectedOrderedIds.toSet())
 
         mutableState.update {
             it.copy(
@@ -317,6 +333,8 @@ class HomeScreenModel(
         val enabledLangs = sourcePreferences.enabledLanguages.get()
         val disabledIds = sourcePreferences.disabledSources.get()
         val homeSelectedSourceIds = sourcePreferences.homeSources.get()
+        val savedOrderStr = sourcePreferences.homeSourcesOrder.get()
+        val savedOrderList = if (savedOrderStr.isBlank()) emptyList() else savedOrderStr.split(",")
 
         val onlineSources = sourceManager.getVisibleOnlineSources()
             .filterIsInstance<CatalogueSource>()
@@ -329,11 +347,25 @@ class HomeScreenModel(
             sourceManager.getVisibleOnlineSources().filterIsInstance<CatalogueSource>()
         }
 
-        return when {
-            homeSelectedSourceIds.isEmpty() -> baseSources
-            homeSelectedSourceIds.contains("NONE") -> emptyList()
-            else -> baseSources.filter { it.id.toString() in homeSelectedSourceIds }
+        if (homeSelectedSourceIds.contains("NONE")) return emptyList()
+
+        val baseSourceMap = baseSources.associateBy { it.id.toString() }
+        val orderedActiveSources = mutableListOf<CatalogueSource>()
+
+        savedOrderList.forEach { id ->
+            val src = baseSourceMap[id]
+            if (src != null && (homeSelectedSourceIds.isEmpty() || id in homeSelectedSourceIds) && src !in orderedActiveSources) {
+                orderedActiveSources.add(src)
+            }
         }
+        baseSources.forEach { src ->
+            val id = src.id.toString()
+            if ((homeSelectedSourceIds.isEmpty() || id in homeSelectedSourceIds) && src !in orderedActiveSources) {
+                orderedActiveSources.add(src)
+            }
+        }
+
+        return orderedActiveSources
     }
 
     fun loadMoreLatestChapters() {
