@@ -26,10 +26,17 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
@@ -99,6 +106,21 @@ fun HomeScreen(
     onLoadMoreDiscover: () -> Unit,
     onItemClick: (HomeItem) -> Unit,
 ) {
+    var isFilterRowVisible by remember { mutableStateOf(true) }
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                val delta = available.y
+                if (delta < -10f) {
+                    isFilterRowVisible = false
+                } else if (delta > 10f) {
+                    isFilterRowVisible = true
+                }
+                return Offset.Zero
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             Column(
@@ -120,11 +142,17 @@ fun HomeScreen(
                     onTabSelected = onTabSelected,
                 )
                 if (state.availableSources.isNotEmpty()) {
-                    HomeSourceFilterRow(
-                        availableSources = state.availableSources,
-                        selectedSourceId = state.selectedSourceId,
-                        onSourceFilterSelected = onSourceFilterSelected,
-                    )
+                    AnimatedVisibility(
+                        visible = isFilterRowVisible,
+                        enter = expandVertically(),
+                        exit = shrinkVertically(),
+                    ) {
+                        HomeSourceFilterRow(
+                            availableSources = state.availableSources,
+                            selectedSourceId = state.selectedSourceId,
+                            onSourceFilterSelected = onSourceFilterSelected,
+                        )
+                    }
                 }
             }
         },
@@ -132,7 +160,8 @@ fun HomeScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .nestedScroll(nestedScrollConnection),
         ) {
             when {
                 state.isLoadingLatest && state.isLoadingDiscover && state.latestChaptersItems.isEmpty() && state.discoverItems.isEmpty() -> {
@@ -743,7 +772,6 @@ private fun DiscoverMangaTabContent(
             }
         }
     }
-}
 }
 
 private fun getItemKey(item: HomeItem): String {
