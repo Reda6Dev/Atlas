@@ -14,14 +14,16 @@ class InitializeDefaultCategories(
     suspend fun await(defaultNames: List<String>) = withNonCancellableContext {
         if (preferences.defaultCategoriesInitialized.get()) return@withNonCancellableContext
 
-        val existingCategories = try {
+        val allCategories = try {
             categoryRepository.getAll()
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e) { "Failed to query categories for default initialization" }
             return@withNonCancellableContext
         }
 
-        if (existingCategories.isNotEmpty()) {
+        val userCategories = allCategories.filterNot { it.isSystemCategory }
+
+        if (userCategories.isNotEmpty()) {
             preferences.defaultCategoriesInitialized.set(true)
             return@withNonCancellableContext
         }
@@ -37,8 +39,9 @@ class InitializeDefaultCategories(
                 categoryRepository.insert(category)
             }
             preferences.defaultCategoriesInitialized.set(true)
+            logcat(LogPriority.INFO) { "Successfully initialized 5 default categories for new user." }
         } catch (e: Exception) {
-            logcat(LogPriority.ERROR, e) { "Failed to initialize default categories" }
+            logcat(LogPriority.ERROR, e) { "Failed to create default categories: ${e.message}" }
         }
     }
 }
