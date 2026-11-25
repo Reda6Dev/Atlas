@@ -55,7 +55,7 @@ fun BrowseSourceToolbar(
         titleContent = {
             Text(
                 text = title ?: "",
-                fontSize = 26.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

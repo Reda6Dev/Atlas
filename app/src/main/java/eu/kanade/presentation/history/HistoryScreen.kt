@@ -61,7 +61,7 @@ fun HistoryScreen(
                     titleContent = {
                         AppBarTitle(
                             stringResource(MR.strings.history),
-                            titleStyle = TextStyle(fontSize = 34.sp, fontWeight = FontWeight.Bold),
+                            titleStyle = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold),
                         )
                     },
                     searchQuery = state.searchQuery,
