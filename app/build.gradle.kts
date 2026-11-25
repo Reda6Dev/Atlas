@@ -31,8 +31,8 @@ android {
     defaultConfig {
         applicationId = "com.reda6dev.atlas"
 
-        versionCode = 83
-        versionName = "1.13.4"
+        versionCode = 84
+        versionName = "1.14.0"
 
         buildConfigField("String", "UPSTREAM_VERSION", """"0.20.1"""")
 
