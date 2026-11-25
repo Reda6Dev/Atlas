@@ -930,6 +930,7 @@ private fun MangaScreenSmallImpl(
                         state = chapterListState,
                         contentPadding = PaddingValues(
                             start = contentPadding.calculateStartPadding(layoutDirection),
+                            top = topPadding,
                             end = contentPadding.calculateEndPadding(layoutDirection),
                             bottom = contentPadding.calculateBottomPadding() + 24.dp,
                         ),
