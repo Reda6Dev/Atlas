@@ -152,5 +152,12 @@ class SYDomainModule : InjektModule {
         addSingletonFactory<CustomMangaRepository> { CustomMangaRepositoryImpl(get<Application>()) }
         addFactory { GetCustomMangaInfo(get()) }
         addFactory { SetCustomMangaInfo(get()) }
+
+        addSingletonFactory<tachiyomi.domain.character.repository.FavoriteCharactersRepository> {
+            tachiyomi.data.character.FavoriteCharactersRepositoryImpl(get())
+        }
+        addSingletonFactory<tachiyomi.domain.character.repository.MangaAnilistLinkRepository> {
+            tachiyomi.data.character.MangaAnilistLinkRepositoryImpl(get())
+        }
     }
 }

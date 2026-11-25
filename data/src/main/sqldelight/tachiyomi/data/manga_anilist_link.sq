@@ -1,0 +1,15 @@
+CREATE TABLE manga_anilist_link (
+    manga_id INTEGER NOT NULL PRIMARY KEY REFERENCES mangas(_id) ON DELETE CASCADE,
+    anilist_id INTEGER NOT NULL,
+    confirmed INTEGER NOT NULL DEFAULT 0
+);
+
+insert:
+INSERT OR REPLACE INTO manga_anilist_link(manga_id, anilist_id, confirmed)
+VALUES (?, ?, ?);
+
+delete:
+DELETE FROM manga_anilist_link WHERE manga_id = ?;
+
+selectByMangaId:
+SELECT * FROM manga_anilist_link WHERE manga_id = ?;
