@@ -3,6 +3,9 @@ package eu.kanade.presentation.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -112,6 +115,9 @@ fun HomeScreen(
     onLoadMoreLatestChapters: () -> Unit,
     onLoadMoreDiscover: () -> Unit,
     onItemClick: (HomeItem) -> Unit,
+    onItemLongClick: (HomeItem) -> Unit = {},
+    onSetMangaCategories: (tachiyomi.domain.manga.model.Manga, List<Long>) -> Unit = { _, _ -> },
+    onCloseDialog: () -> Unit = {},
 ) {
     var isFilterRowVisible by remember { mutableStateOf(true) }
     val nestedScrollConnection = remember {
@@ -253,6 +259,20 @@ fun HomeScreen(
                     onSave = onSaveSourceSettings,
                     onDismiss = onDismissSourceSettings,
                 )
+            }
+
+            when (val dialog = state.dialog) {
+                is HomeScreenModel.Dialog.ChangeMangaCategory -> {
+                    ChangeCategoryDialog(
+                        initialSelection = dialog.initialSelection,
+                        onDismissRequest = onCloseDialog,
+                        onEditCategories = {},
+                        onConfirm = { selected, _ ->
+                            onSetMangaCategories(dialog.manga, selected)
+                        },
+                    )
+                }
+                null -> Unit
             }
         }
     }
@@ -904,10 +924,12 @@ private fun HomeErrorBanner(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun GridCardItem(
     item: HomeItem,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
 ) {
     val domainCover = DomainMangaCover(
         mangaId = when (item) {
@@ -930,7 +952,10 @@ private fun GridCardItem(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
     ) {
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -982,10 +1007,12 @@ private fun GridCardItem(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ListItemCard(
     item: HomeItem,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
 ) {
     val domainCover = DomainMangaCover(
         mangaId = when (item) {
@@ -1015,7 +1042,10 @@ private fun ListItemCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .clickable { onClick() },
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
     ) {
         Row(

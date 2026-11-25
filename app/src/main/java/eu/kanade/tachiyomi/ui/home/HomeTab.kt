@@ -81,6 +81,9 @@ object HomeTab : Tab {
             onLoadMoreLatestChapters = { screenModel.loadMoreLatestChapters() },
             onLoadMoreDiscover = { screenModel.loadMoreDiscover() },
             onItemClick = { item -> screenModel.onItemClick(item) },
+            onItemLongClick = { item -> screenModel.onItemLongClick(item) },
+            onSetMangaCategories = { manga, categories -> screenModel.setMangaCategories(manga, categories) },
+            onCloseDialog = { screenModel.closeDialog() },
         )
     }
 }

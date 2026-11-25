@@ -44,6 +44,9 @@ class HomeScreenModel(
     private val sourceManager: SourceManager = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val uiPreferences: UiPreferences = Injekt.get(),
+    private val getCategories: tachiyomi.domain.category.interactor.GetCategories = Injekt.get(),
+    private val setMangaCategories: tachiyomi.domain.category.interactor.SetMangaCategories = Injekt.get(),
+    private val getManga: tachiyomi.domain.manga.interactor.GetManga = Injekt.get(),
 ) : StateScreenModel<HomeScreenModel.State>(
     State(displayMode = uiPreferences.homeDisplayMode.get()),
 ) {
@@ -56,6 +59,7 @@ class HomeScreenModel(
         val isRefreshing: Boolean = false,
         val showSourceSettingsDialog: Boolean = false,
         val sourceDialogItems: List<HomeSourceDialogItem> = emptyList(),
+        val dialog: Dialog? = null,
 
         // Latest Chapters Tab State
         val latestChaptersItems: List<HomeItem> = emptyList(),
@@ -73,6 +77,13 @@ class HomeScreenModel(
         val hasMoreDiscover: Boolean = true,
         val discoverError: String? = null,
     )
+
+    sealed interface Dialog {
+        data class ChangeMangaCategory(
+            val manga: tachiyomi.domain.manga.model.Manga,
+            val initialSelection: List<tachiyomi.core.common.preference.CheckboxState.State<tachiyomi.domain.category.model.Category>>,
+        ) : Dialog
+    }
 
     sealed interface Event {
         data class OpenManga(val mangaId: Long) : Event
@@ -560,6 +571,65 @@ class HomeScreenModel(
                 _events.send(Event.OpenManga(localMangaId))
             } else {
                 _events.send(Event.ErrorLoading)
+            }
+        }
+    }
+
+    fun openChangeCategoryDialog(mangaId: Long) {
+        screenModelScope.launchIO {
+            val manga = getManga.await(mangaId) ?: return@launchIO
+            val categories = getCategories.await()
+            val mangaCategories = getCategories.await(mangaId)
+            val initialSelection = categories.map { category ->
+                if (mangaCategories.any { it.id == category.id }) {
+                    tachiyomi.core.common.preference.CheckboxState.State.Checked(category)
+                } else {
+                    tachiyomi.core.common.preference.CheckboxState.State.None(category)
+                }
+            }
+            mutableState.update {
+                it.copy(dialog = Dialog.ChangeMangaCategory(manga, initialSelection))
+            }
+        }
+    }
+
+    fun setMangaCategories(manga: tachiyomi.domain.manga.model.Manga, categories: List<Long>) {
+        screenModelScope.launchIO {
+            setMangaCategories.await(manga.id, categories)
+            closeDialog()
+        }
+    }
+
+    fun closeDialog() {
+        mutableState.update { it.copy(dialog = null) }
+    }
+
+    fun onItemLongClick(item: HomeItem) {
+        screenModelScope.launch {
+            val targetSourceId = when (item) {
+                is HomeItem.MangaCard -> item.sourceId
+                is HomeItem.ChapterCard -> item.sourceId
+                is HomeItem.HistoryCard -> null
+            } ?: mangaDexSourceId
+
+            val localMangaId = when (item) {
+                is HomeItem.HistoryCard -> item.localMangaId
+                is HomeItem.MangaCard -> {
+                    item.localMangaId ?: item.sManga?.let { sManga ->
+                        withContext(Dispatchers.IO) {
+                            networkToLocalManga(sManga.toDomainManga(targetSourceId)).id
+                        }
+                    }
+                }
+                is HomeItem.ChapterCard -> {
+                    withContext(Dispatchers.IO) {
+                        networkToLocalManga(item.sManga.toDomainManga(targetSourceId)).id
+                    }
+                }
+            }
+
+            if (localMangaId != null) {
+                openChangeCategoryDialog(localMangaId)
             }
         }
     }
