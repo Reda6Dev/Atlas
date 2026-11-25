@@ -156,6 +156,19 @@
     <string name="pref_include_chapter_url_hash">Include chapter URL hash</string>
     <string name="pref_include_chapter_url_hash_desc">Append the first six characters of the chapter URL's MD5 hash to the chapter file or folder name.</string>
 
+    <string name="tab_characters">Characters</string>
+    <string name="label_favorite_characters">My Favorite Characters</string>
+    <string name="section_main_characters">Main Characters</string>
+    <string name="section_supporting_characters">Supporting Characters</string>
+    <string name="section_staff">Staff</string>
+    <string name="no_characters_found">No characters registered for this work</string>
+    <string name="ambiguous_match_title">Could not match automatically with confidence</string>
+    <string name="ambiguous_match_desc">Please select the correct entry to display its characters and staff</string>
+    <string name="btn_select_correct_work">Select Correct Entry</string>
+    <string name="character_details_title">Character Details</string>
+    <string name="hidden_spoiler_text">🔒 Hidden Spoiler (Tap to view)</string>
+    <string name="no_favorite_characters">No favorite characters saved</string>
+
     <!-- Log Level -->
     <string name="log_minimal">Minimal</string>
     <string name="log_extra">Extra</string>
