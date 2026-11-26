@@ -171,7 +171,6 @@
     <string name="readers_also_like">Readers Also Like</string>
     <string name="pref_allow_adult_similar">Show adult content in recommendations</string>
     <string name="pref_allow_adult_similar_summary">Include recommendations with +18 content rating</string>
-    <string name="source_mangabaka">Source: MangaBaka</string>
     <string name="no_recommendations">No recommendations found</string>
 
     <!-- Log Level -->

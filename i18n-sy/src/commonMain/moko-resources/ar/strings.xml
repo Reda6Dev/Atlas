@@ -53,7 +53,6 @@
     <string name="readers_also_like">قد يعجبك أيضاً</string>
     <string name="pref_allow_adult_similar">إظهار المحتوى للبالغين في المشابه</string>
     <string name="pref_allow_adult_similar_summary">إظهار التوصيات التي تحتوي على تصنيف +18</string>
-    <string name="source_mangabaka">المصدر: MangaBaka</string>
     <string name="no_recommendations">لا توجد أعمال مشابهة</string>
     <string name="eh_settings_uploading_to_server_message">يرجى الانتظار، قد يستغرق هذا بعض الوقت…</string>
     <string name="recheck_login_status">إعادة التحقق من حالة تسجيل الدخول</string>
