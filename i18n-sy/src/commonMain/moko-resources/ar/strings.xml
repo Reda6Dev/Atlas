@@ -50,7 +50,7 @@
     <string name="character_details_title">تفاصيل الشخصية</string>
     <string name="hidden_spoiler_text">🔒 محتوى مخفي (اضغط للعرض)</string>
     <string name="no_favorite_characters">لا توجد شخصيات مفضلة مسجّلة</string>
-    <string name="readers_also_like">قد يعجبك أيضاً</string>
+    <string name="readers_also_like">قرّاء أحبوا أيضاً</string>
     <string name="pref_allow_adult_similar">إظهار المحتوى للبالغين في المشابه</string>
     <string name="pref_allow_adult_similar_summary">إظهار التوصيات التي تحتوي على تصنيف +18</string>
     <string name="no_recommendations">لا توجد أعمال مشابهة</string>
