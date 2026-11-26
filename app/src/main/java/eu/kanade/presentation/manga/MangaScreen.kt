@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -799,7 +800,10 @@ private fun MangaScreenSmallImpl(
                         text = {
                             Text(
                                 text = "التفاصيل",
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp),
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis,
                             )
                         },
                     )
@@ -813,7 +817,10 @@ private fun MangaScreenSmallImpl(
                         text = {
                             Text(
                                 text = "الفصول (${chapters.size})",
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp),
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis,
                             )
                         },
                     )
@@ -827,7 +834,10 @@ private fun MangaScreenSmallImpl(
                         text = {
                             Text(
                                 text = "الشخصيات",
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp),
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis,
                             )
                         },
                     )
@@ -996,7 +1006,8 @@ private fun MangaScreenSmallImpl(
                                 rowCount = previewsRowCount,
                             )
                         }
-                        Spacer(Modifier.height(16.dp))
+                        val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                        Spacer(Modifier.height(navBarBottom + 24.dp))
                     }
                 } else if (page == 1) {
                     VerticalFastScroller(
@@ -1004,6 +1015,7 @@ private fun MangaScreenSmallImpl(
                         topContentPadding = topPadding,
                         endContentPadding = contentPadding.calculateEndPadding(layoutDirection),
                     ) {
+                        val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                         LazyColumn(
                             modifier = Modifier.fillMaxHeight(),
                             state = chapterListState,
@@ -1011,7 +1023,7 @@ private fun MangaScreenSmallImpl(
                                 start = contentPadding.calculateStartPadding(layoutDirection),
                                 top = topPadding,
                                 end = contentPadding.calculateEndPadding(layoutDirection),
-                                bottom = contentPadding.calculateBottomPadding() + 24.dp,
+                                bottom = contentPadding.calculateBottomPadding() + navBarBottom + 24.dp,
                             ),
                         ) {
                             item(
