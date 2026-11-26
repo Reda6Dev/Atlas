@@ -347,11 +347,6 @@ class MangaBakaApi(
             mangas
         }
     }
-            }
-            readersCache[cacheKey] = mangas
-            mangas
-        }
-    }
 
     suspend fun resolveMangaBakaId(manga: Manga): Long? {
         val getTracks = Injekt.get<GetTracks>()

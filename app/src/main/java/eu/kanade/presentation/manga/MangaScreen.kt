@@ -97,6 +97,7 @@ import eu.kanade.presentation.manga.components.PagePreviews
 import eu.kanade.presentation.manga.components.SearchMetadataChips
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -326,14 +327,18 @@ fun MangaScreen(
     }
 }
 
-private sealed interface SimilarState {
-    data object Loading : SimilarState
-    data class Success(val mangas: List<Manga>) : SimilarState
-    data object Empty : SimilarState
-    data object Error : SimilarState
+private sealed interface SimilarSectionState {
+    data object Loading : SimilarSectionState
+    data class Success(
+        val similarMangas: List<Manga>,
+        val readersAlsoLikeMangas: List<Manga>,
+    ) : SimilarSectionState
+
+    data object Empty : SimilarSectionState
+    data object Error : SimilarSectionState
 }
 
-private val similarMangaCache = ConcurrentHashMap<Long, SimilarState>()
+private val similarMangaCache = ConcurrentHashMap<Long, SimilarSectionState>()
 
 private suspend fun fetchRecsFromSource(
     recSource: RecommendationPagingSource,
@@ -353,35 +358,66 @@ private suspend fun fetchRecsFromSource(
     }.take(15)
 }
 
-private suspend fun fetchSimilarMangas(manga: Manga, attempt: Int = 1): SimilarState {
+private suspend fun fetchSimilarMangas(manga: Manga, attempt: Int = 1): SimilarSectionState {
     return try {
         val networkToLocalManga = Injekt.get<NetworkToLocalManga>()
+        val api = Injekt.get<TrackerManager>().mangaBaka.api
 
-        val recSources = listOf(
-            exh.recs.sources.MangaBakaSimilarPagingSource(manga),
-            AniListPagingSource(manga),
-        )
+        val mbId = api.resolveMangaBakaId(manga)
 
-        for (recSource in recSources) {
-            try {
-                val results = fetchRecsFromSource(recSource, manga, networkToLocalManga)
-                if (results.isNotEmpty()) {
-                    return SimilarState.Success(results)
+        kotlinx.coroutines.coroutineScope {
+            val similarDeferred = kotlinx.coroutines.async {
+                if (mbId != null) {
+                    try {
+                        api.getSimilarSeries(mbId).map {
+                            networkToLocalManga(it.toDomainManga(-1L))
+                        }.take(15)
+                    } catch (_: Exception) {
+                        emptyList()
+                    }
+                } else {
+                    try {
+                        fetchRecsFromSource(AniListPagingSource(manga), manga, networkToLocalManga)
+                    } catch (_: Exception) {
+                        emptyList()
+                    }
                 }
-            } catch (_: Exception) {
-                // Try next recommendation source
+            }
+
+            val readersDeferred = kotlinx.coroutines.async {
+                if (mbId != null) {
+                    try {
+                        api.getReadersAlsoLike(mbId).map {
+                            networkToLocalManga(it.toDomainManga(-1L))
+                        }.take(15)
+                    } catch (_: Exception) {
+                        emptyList()
+                    }
+                } else {
+                    emptyList()
+                }
+            }
+
+            val similarMangas = similarDeferred.await()
+            val readersMangas = readersDeferred.await()
+
+            if (similarMangas.isEmpty() && readersMangas.isEmpty()) {
+                SimilarSectionState.Empty
+            } else {
+                SimilarSectionState.Success(
+                    similarMangas = similarMangas,
+                    readersAlsoLikeMangas = readersMangas,
+                )
             }
         }
-
-        SimilarState.Empty
     } catch (e: Exception) {
         if (e is NoResultsException) {
-            SimilarState.Empty
+            SimilarSectionState.Empty
         } else if (attempt == 1) {
             delay(1500)
             fetchSimilarMangas(manga, attempt = 2)
         } else {
-            SimilarState.Error
+            SimilarSectionState.Error
         }
     }
 }
@@ -392,21 +428,19 @@ private fun SimilarMangaSection(
     onRecommendClicked: () -> Unit,
     onSearch: (query: String, global: Boolean) -> Unit,
 ) {
-    val navigator = LocalNavigator.current
-    var lastClickTime by remember { mutableStateOf(0L) }
     var refreshTrigger by remember { mutableIntStateOf(0) }
 
-    val state by produceState<SimilarState>(
-        initialValue = similarMangaCache[manga.id] ?: SimilarState.Loading,
+    val state by produceState<SimilarSectionState>(
+        initialValue = similarMangaCache[manga.id] ?: SimilarSectionState.Loading,
         key1 = manga.id,
         key2 = refreshTrigger,
     ) {
         val cached = similarMangaCache[manga.id]
-        if (cached != null && cached !is SimilarState.Loading && refreshTrigger == 0) {
+        if (cached != null && cached !is SimilarSectionState.Loading && refreshTrigger == 0) {
             value = cached
             return@produceState
         }
-        value = SimilarState.Loading
+        value = SimilarSectionState.Loading
         val newState = withContext(Dispatchers.IO) {
             fetchSimilarMangas(manga)
         }
@@ -415,14 +449,14 @@ private fun SimilarMangaSection(
     }
 
     when (val currentState = state) {
-        SimilarState.Loading -> {
+        SimilarSectionState.Loading -> {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 12.dp),
             ) {
                 Text(
-                    text = "مشابه",
+                    text = stringResource(SYMR.strings.similar_titles),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -441,10 +475,10 @@ private fun SimilarMangaSection(
                 }
             }
         }
-        SimilarState.Empty -> {
+        SimilarSectionState.Empty -> {
             // Hide section completely when no recommendations exist
         }
-        SimilarState.Error -> {
+        SimilarSectionState.Error -> {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -458,7 +492,7 @@ private fun SimilarMangaSection(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        text = "مشابه",
+                        text = stringResource(SYMR.strings.similar_titles),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
@@ -478,7 +512,7 @@ private fun SimilarMangaSection(
                             )
                             Spacer(Modifier.width(4.dp))
                             Text(
-                                text = "إعادة المحاولة",
+                                text = stringResource(MR.strings.action_retry),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.primary,
                             )
@@ -487,87 +521,122 @@ private fun SimilarMangaSection(
                 }
             }
         }
-        is SimilarState.Success -> {
-            val items = currentState.mangas
+        is SimilarSectionState.Success -> {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 12.dp),
+                    .padding(vertical = 4.dp),
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = "مشابه",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
+                if (currentState.similarMangas.isNotEmpty()) {
+                    SimilarRow(
+                        title = stringResource(SYMR.strings.similar_titles),
+                        items = currentState.similarMangas,
+                        onRecommendClicked = onRecommendClicked,
                     )
-                    TextButton(
-                        onClick = onRecommendClicked,
-                        contentPadding = PaddingValues(horizontal = 8.dp),
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "عرض الكل",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp),
-                            )
-                        }
-                    }
                 }
+                if (currentState.readersAlsoLikeMangas.isNotEmpty()) {
+                    SimilarRow(
+                        title = stringResource(SYMR.strings.readers_also_like),
+                        items = currentState.readersAlsoLikeMangas,
+                        onRecommendClicked = onRecommendClicked,
+                    )
+                }
+            }
+        }
+    }
+}
 
-                Spacer(Modifier.height(8.dp))
+@Composable
+private fun SimilarRow(
+    title: String,
+    items: List<Manga>,
+    onRecommendClicked: () -> Unit,
+) {
+    val navigator = LocalNavigator.current
+    var lastClickTime by remember { mutableStateOf(0L) }
 
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            TextButton(
+                onClick = onRecommendClicked,
+                contentPadding = PaddingValues(horizontal = 8.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(MR.strings.action_show_all),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(
+                items = items,
+                key = { "rec-${it.id}-${it.url}" },
+            ) { item ->
+                Column(
+                    modifier = Modifier
+                        .width(110.dp)
+                        .clickable {
+                            val now = System.currentTimeMillis()
+                            if (now - lastClickTime > 1000L) {
+                                lastClickTime = now
+                                if (item.source != -1L) {
+                                    navigator?.push(MangaUiScreen(item.id, true))
+                                } else {
+                                    val query = item.ogTitle.ifBlank { item.title }
+                                    navigator?.push(GlobalSearchScreen(query))
+                                }
+                            }
+                        },
                 ) {
-                    items(
-                        items = items,
-                        key = { "similar-${it.id}-${it.url}" },
-                    ) { item ->
-                        Column(
-                            modifier = Modifier
-                                .width(110.dp)
-                                .clickable {
-                                    val now = System.currentTimeMillis()
-                                    if (now - lastClickTime > 1000L) {
-                                        lastClickTime = now
-                                        if (item.source != -1L) {
-                                            navigator?.push(MangaUiScreen(item.id, true))
-                                        } else {
-                                            val query = item.ogTitle.ifBlank { item.title }
-                                            navigator?.push(GlobalSearchScreen(query))
-                                        }
-                                    }
-                                },
-                        ) {
-                            MangaCover.Book(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .aspectRatio(MangaCover.Book.ratio),
-                                data = item,
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = item.title,
-                                style = MaterialTheme.typography.bodySmall,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
+                    MangaCover.Book(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(MangaCover.Book.ratio),
+                        data = item,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = item.title,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        }
+    }
+}
                 }
             }
         }
