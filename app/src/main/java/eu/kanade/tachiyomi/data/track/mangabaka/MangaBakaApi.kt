@@ -274,18 +274,15 @@ class MangaBakaApi(
 
     fun verifyOAuthState(state: String): Boolean = state == oauthStateParam
 
-    suspend fun getSimilarSeries(mangaBakaId: Long, allowAdult: Boolean): List<SManga> {
+    suspend fun getSimilarSeries(mangaBakaId: Long): List<SManga> {
         return withIOContext {
-            val cacheKey = "similar_${mangaBakaId}_$allowAdult"
+            val cacheKey = "similar_$mangaBakaId"
             similarCache[cacheKey]?.let { return@withIOContext it }
 
             val uriBuilder = "$API_BASE_URL/v1/series/$mangaBakaId/similar".toUri().buildUpon()
                 .appendQueryParameter("limit", "24")
-
-            if (!allowAdult) {
-                uriBuilder.appendQueryParameter("content_rating", "safe")
-                uriBuilder.appendQueryParameter("content_rating", "suggestive")
-            }
+                .appendQueryParameter("content_rating", "safe")
+                .appendQueryParameter("content_rating", "suggestive")
 
             val response = try {
                 client.newCall(GET(uriBuilder.build().toString())).awaitSuccess()
@@ -300,7 +297,7 @@ class MangaBakaApi(
             val mangas = result.data.mapNotNull { entry ->
                 val s = entry.series
                 if (s.type.lowercase() == "novel") return@mapNotNull null
-                if (!allowAdult && (s.contentRating == "erotica" || s.contentRating == "pornographic")) return@mapNotNull null
+                if (s.contentRating == "erotica" || s.contentRating == "pornographic") return@mapNotNull null
 
                 SManga(
                     title = s.title,
@@ -314,18 +311,15 @@ class MangaBakaApi(
         }
     }
 
-    suspend fun getReadersAlsoLike(mangaBakaId: Long, allowAdult: Boolean): List<SManga> {
+    suspend fun getReadersAlsoLike(mangaBakaId: Long): List<SManga> {
         return withIOContext {
-            val cacheKey = "readers_${mangaBakaId}_$allowAdult"
+            val cacheKey = "readers_$mangaBakaId"
             readersCache[cacheKey]?.let { return@withIOContext it }
 
             val uriBuilder = "$API_BASE_URL/v1/series/$mangaBakaId/readers-also-like".toUri().buildUpon()
                 .appendQueryParameter("limit", "24")
-
-            if (!allowAdult) {
-                uriBuilder.appendQueryParameter("content_rating", "safe")
-                uriBuilder.appendQueryParameter("content_rating", "suggestive")
-            }
+                .appendQueryParameter("content_rating", "safe")
+                .appendQueryParameter("content_rating", "suggestive")
 
             val response = try {
                 client.newCall(GET(uriBuilder.build().toString())).awaitSuccess()
@@ -340,7 +334,7 @@ class MangaBakaApi(
             val mangas = result.data.mapNotNull { entry ->
                 val s = entry.series
                 if (s.type.lowercase() == "novel") return@mapNotNull null
-                if (!allowAdult && (s.contentRating == "erotica" || s.contentRating == "pornographic")) return@mapNotNull null
+                if (s.contentRating == "erotica" || s.contentRating == "pornographic") return@mapNotNull null
 
                 SManga(
                     title = s.title,
@@ -348,6 +342,11 @@ class MangaBakaApi(
                     initialized = true,
                     url = "$BASE_URL/${s.id}",
                 )
+            }
+            readersCache[cacheKey] = mangas
+            mangas
+        }
+    }
             }
             readersCache[cacheKey] = mangas
             mangas

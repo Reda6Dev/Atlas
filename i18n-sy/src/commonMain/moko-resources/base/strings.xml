@@ -169,8 +169,6 @@
     <string name="hidden_spoiler_text">🔒 Hidden Spoiler (Tap to view)</string>
     <string name="no_favorite_characters">No favorite characters saved</string>
     <string name="readers_also_like">Readers Also Like</string>
-    <string name="pref_allow_adult_similar">Show adult content in recommendations</string>
-    <string name="pref_allow_adult_similar_summary">Include recommendations with +18 content rating</string>
     <string name="no_recommendations">No recommendations found</string>
 
     <!-- Log Level -->

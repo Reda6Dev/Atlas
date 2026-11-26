@@ -1,7 +1,6 @@
 package exh.recs.sources
 
 import dev.icerock.moko.resources.StringResource
-import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.mangabaka.MangaBakaApi
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -27,9 +26,8 @@ class MangaBakaSimilarPagingSource(
     }
 
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
-        val allowAdult = Injekt.get<UiPreferences>().allowAdultSimilar.get()
         val mbId = api.resolveMangaBakaId(manga) ?: throw NoResultsException()
-        val recs = api.getSimilarSeries(mbId, allowAdult)
+        val recs = api.getSimilarSeries(mbId)
         if (recs.isEmpty()) throw NoResultsException()
         return MangasPage(recs, false)
     }
