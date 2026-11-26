@@ -377,9 +377,8 @@ private suspend fun fetchSimilarMangas(manga: Manga, attempt: Int = 1): SimilarS
         val getTracks = Injekt.get<GetTracks>()
 
         val recSources = listOf(
+            exh.recs.sources.MangaBakaSimilarPagingSource(manga),
             AniListPagingSource(manga),
-            // MyAnimeListPagingSource(manga),
-            MangaUpdatesSimilarPagingSource(manga),
         )
 
         for (recSource in recSources) {

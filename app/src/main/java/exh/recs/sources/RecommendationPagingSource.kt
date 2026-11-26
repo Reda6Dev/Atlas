@@ -45,11 +45,17 @@ abstract class RecommendationPagingSource(
     open val associatedSourceId: Long? = null
 
     companion object {
+        private const val ENABLE_MANGAUPDATES = false
+
         fun createSources(manga: Manga, source: Source): List<RecommendationPagingSource> {
             return buildList {
                 add(AniListPagingSource(manga))
-                add(MangaUpdatesCommunityPagingSource(manga))
-                add(MangaUpdatesSimilarPagingSource(manga))
+                add(MangaBakaSimilarPagingSource(manga))
+                add(MangaBakaReadersAlsoLikePagingSource(manga))
+                if (ENABLE_MANGAUPDATES) {
+                    add(MangaUpdatesCommunityPagingSource(manga))
+                    add(MangaUpdatesSimilarPagingSource(manga))
+                }
                 // add(MyAnimeListPagingSource(manga))
 
                 // Only include MangaDex if the delegate sources are enabled and the source is MD-based
