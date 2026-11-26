@@ -85,13 +85,7 @@ fun MangaChapterListItem(
         onSwipe = { onChapterSwipe(chapterSwipeEndAction) },
     )
 
-    SwipeableActionsBox(
-        modifier = Modifier.clipToBounds(),
-        startActions = listOfNotNull(start),
-        endActions = listOfNotNull(end),
-        swipeThreshold = swipeActionThreshold,
-        backgroundUntilSwipeThreshold = MaterialTheme.colorScheme.surfaceContainerLowest,
-    ) {
+    val rowContent: @Composable () -> Unit = {
         Row(
             modifier = modifier
                 .selectedBackground(selected)
@@ -197,6 +191,20 @@ fun MangaChapterListItem(
                 onClick = { onDownloadClick?.invoke(it) },
             )
         }
+    }
+
+    if (start != null || end != null) {
+        SwipeableActionsBox(
+            modifier = Modifier.clipToBounds(),
+            startActions = listOfNotNull(start),
+            endActions = listOfNotNull(end),
+            swipeThreshold = swipeActionThreshold,
+            backgroundUntilSwipeThreshold = MaterialTheme.colorScheme.surfaceContainerLowest,
+        ) {
+            rowContent()
+        }
+    } else {
+        rowContent()
     }
 }
 

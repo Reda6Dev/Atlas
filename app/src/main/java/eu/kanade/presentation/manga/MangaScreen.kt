@@ -1488,8 +1488,8 @@ private fun LazyListScope.sharedChapterItems(
                     !isAnyChapterSelected && !(mergedData?.manga?.get(item.chapter.mangaId) ?: manga).isLocal(),
                     downloadStateProvider = { item.downloadState },
                     downloadProgressProvider = { item.downloadProgress },
-                    chapterSwipeStartAction = chapterSwipeStartAction,
-                    chapterSwipeEndAction = chapterSwipeEndAction,
+                    chapterSwipeStartAction = LibraryPreferences.ChapterSwipeAction.Disabled,
+                    chapterSwipeEndAction = LibraryPreferences.ChapterSwipeAction.Disabled,
                     onLongClick = {
                         onChapterSelected(item, !item.selected, true)
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -1507,9 +1507,7 @@ private fun LazyListScope.sharedChapterItems(
                     } else {
                         null
                     },
-                    onChapterSwipe = {
-                        onChapterSwipe(item, it)
-                    },
+                    onChapterSwipe = {},
                 )
             }
         }
