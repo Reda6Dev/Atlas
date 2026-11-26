@@ -39,11 +39,13 @@ fun EmptyScreen(
     stringRes: StringResource,
     modifier: Modifier = Modifier,
     actions: List<EmptyScreenAction>? = null,
+    secondaryMessage: String? = null,
 ) {
     EmptyScreen(
         message = stringResource(stringRes),
         modifier = modifier,
         actions = actions,
+        secondaryMessage = secondaryMessage,
     )
 }
 
@@ -52,6 +54,7 @@ fun EmptyScreen(
     message: String,
     modifier: Modifier = Modifier,
     actions: List<EmptyScreenAction>? = null,
+    secondaryMessage: String? = null,
 ) {
     val face = remember { getRandomErrorFace() }
     Column(
@@ -78,6 +81,18 @@ fun EmptyScreen(
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )
+
+        if (!secondaryMessage.isNullOrBlank()) {
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Text(
+                    text = secondaryMessage,
+                    modifier = Modifier.padding(top = 6.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
 
         if (!actions.isNullOrEmpty()) {
             Row(
