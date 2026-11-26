@@ -135,6 +135,8 @@ import exh.ui.metadata.adapters.NHentaiDescription
 import exh.ui.metadata.adapters.PururinDescription
 import exh.ui.metadata.adapters.TsuminoDescription
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -148,6 +150,7 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.VerticalFastScroller
 import tachiyomi.presentation.core.components.material.PullRefresh
@@ -365,8 +368,8 @@ private suspend fun fetchSimilarMangas(manga: Manga, attempt: Int = 1): SimilarS
 
         val mbId = api.resolveMangaBakaId(manga)
 
-        kotlinx.coroutines.coroutineScope {
-            val similarDeferred = kotlinx.coroutines.async {
+        coroutineScope {
+            val similarDeferred = async {
                 if (mbId != null) {
                     try {
                         api.getSimilarSeries(mbId).map {
@@ -384,7 +387,7 @@ private suspend fun fetchSimilarMangas(manga: Manga, attempt: Int = 1): SimilarS
                 }
             }
 
-            val readersDeferred = kotlinx.coroutines.async {
+            val readersDeferred = async {
                 if (mbId != null) {
                     try {
                         api.getReadersAlsoLike(mbId).map {
@@ -578,7 +581,7 @@ private fun SimilarRow(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = stringResource(MR.strings.action_show_all),
+                        text = "عرض الكل",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -632,11 +635,6 @@ private fun SimilarRow(
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
-                }
-            }
-        }
-    }
-}
                 }
             }
         }
