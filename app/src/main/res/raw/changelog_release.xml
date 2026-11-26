@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
     <changelogversion versionName="1.14.6" changeDate="November 2026">
-        <changelogtext>أيقونة التطبيق تتغير تلقائيًا حسب الثيم (يمكن إيقافها من إعدادات المظهر)، وتحسينات في الواجهة.</changelogtext>
-        <changelogtext>App icon changes automatically with theme (can be disabled in appearance settings), and UI improvements.</changelogtext>
+        <changelogtext>تحسينات في الواجهة: شريط التبويبات في صفحة العمل، وأيقونة الرئيسية، وإزالة دوّارة التحميل من الشريط العلوي.</changelogtext>
+        <changelogtext>UI improvements: manga page tabs bar, home icon, and removing loading spinner from top bar.</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.14.5" changeDate="November 2026">
         <changelogtext>تبويب "الشخصيات" في صفحة العمل من AniList مع شاشة تفاصيل الشخصية وقائمة "شخصياتي المفضلة"؛ قسما "مشابه" و"قرّاء أحبوا أيضًا" من MangaBaka بدل MangaUpdates؛ استبعاد المحتوى الصريح والروايات.</changelogtext>
