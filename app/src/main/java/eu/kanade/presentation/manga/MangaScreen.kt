@@ -31,6 +31,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -871,9 +873,16 @@ private fun MangaScreenSmallImpl(
             indicatorPadding = PaddingValues(top = topPadding),
         ) {
             val layoutDirection = LocalLayoutDirection.current
+            val pagerFlingBehavior = PagerDefaults.flingBehavior(
+                state = pagerState,
+                pagerSnapDistance = PagerSnapDistance.atMost(1),
+                snapPositionalThreshold = 0.2f,
+            )
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
+                flingBehavior = pagerFlingBehavior,
+                userScrollEnabled = true,
             ) { page ->
                 if (page == 0) {
                     Column(
