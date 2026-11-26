@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.track.mangabaka.dto.MangaBakaItem
 import eu.kanade.tachiyomi.data.track.mangabaka.dto.MangaBakaItemResult
 import eu.kanade.tachiyomi.data.track.mangabaka.dto.MangaBakaListResult
 import eu.kanade.tachiyomi.data.track.mangabaka.dto.MangaBakaOAuth
+import eu.kanade.tachiyomi.data.track.mangabaka.dto.MangaBakaRecResult
 import eu.kanade.tachiyomi.data.track.mangabaka.dto.MangaBakaSearchResult
 import eu.kanade.tachiyomi.data.track.mangabaka.dto.MangaBakaUserProfile
 import eu.kanade.tachiyomi.data.track.mangabaka.dto.MangaBakaUserProfileResponse
@@ -20,6 +21,7 @@ import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.PUT
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.PkceUtil
 import eu.kanade.tachiyomi.util.lang.toLocalDate
 import kotlinx.serialization.json.Json
@@ -30,12 +32,17 @@ import okhttp3.Headers.Companion.headersOf
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.i18n.MR
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.math.RoundingMode
 import java.security.SecureRandom
 import java.util.Base64
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Instant
 import tachiyomi.domain.track.model.Track as DomainTrack
 
@@ -267,7 +274,123 @@ class MangaBakaApi(
 
     fun verifyOAuthState(state: String): Boolean = state == oauthStateParam
 
+    suspend fun getSimilarSeries(mangaBakaId: Long, allowAdult: Boolean): List<SManga> {
+        return withIOContext {
+            val cacheKey = "similar_${mangaBakaId}_$allowAdult"
+            similarCache[cacheKey]?.let { return@withIOContext it }
+
+            val uriBuilder = "$API_BASE_URL/v1/series/$mangaBakaId/similar".toUri().buildUpon()
+                .appendQueryParameter("limit", "24")
+
+            if (!allowAdult) {
+                uriBuilder.appendQueryParameter("content_rating", "safe")
+                uriBuilder.appendQueryParameter("content_rating", "suggestive")
+            }
+
+            val response = try {
+                client.newCall(GET(uriBuilder.build().toString())).awaitSuccess()
+            } catch (e: Exception) {
+                if (e.message?.contains("429") == true) {
+                    throw eu.kanade.tachiyomi.data.anilist.AnilistRateLimitException()
+                }
+                return@withIOContext emptyList()
+            }
+
+            val result = with(json) { response.parseAs<MangaBakaRecResult>() }
+            val mangas = result.data.mapNotNull { entry ->
+                val s = entry.series
+                if (s.type.lowercase() == "novel") return@mapNotNull null
+                if (!allowAdult && (s.contentRating == "erotica" || s.contentRating == "pornographic")) return@mapNotNull null
+
+                SManga(
+                    title = s.title,
+                    thumbnail_url = s.cover?.x250?.x1,
+                    initialized = true,
+                    url = "$BASE_URL/${s.id}",
+                )
+            }
+            similarCache[cacheKey] = mangas
+            mangas
+        }
+    }
+
+    suspend fun getReadersAlsoLike(mangaBakaId: Long, allowAdult: Boolean): List<SManga> {
+        return withIOContext {
+            val cacheKey = "readers_${mangaBakaId}_$allowAdult"
+            readersCache[cacheKey]?.let { return@withIOContext it }
+
+            val uriBuilder = "$API_BASE_URL/v1/series/$mangaBakaId/readers-also-like".toUri().buildUpon()
+                .appendQueryParameter("limit", "24")
+
+            if (!allowAdult) {
+                uriBuilder.appendQueryParameter("content_rating", "safe")
+                uriBuilder.appendQueryParameter("content_rating", "suggestive")
+            }
+
+            val response = try {
+                client.newCall(GET(uriBuilder.build().toString())).awaitSuccess()
+            } catch (e: Exception) {
+                if (e.message?.contains("429") == true) {
+                    throw eu.kanade.tachiyomi.data.anilist.AnilistRateLimitException()
+                }
+                return@withIOContext emptyList()
+            }
+
+            val result = with(json) { response.parseAs<MangaBakaRecResult>() }
+            val mangas = result.data.mapNotNull { entry ->
+                val s = entry.series
+                if (s.type.lowercase() == "novel") return@mapNotNull null
+                if (!allowAdult && (s.contentRating == "erotica" || s.contentRating == "pornographic")) return@mapNotNull null
+
+                SManga(
+                    title = s.title,
+                    thumbnail_url = s.cover?.x250?.x1,
+                    initialized = true,
+                    url = "$BASE_URL/${s.id}",
+                )
+            }
+            readersCache[cacheKey] = mangas
+            mangas
+        }
+    }
+
+    suspend fun resolveMangaBakaId(manga: Manga): Long? {
+        val getTracks = Injekt.get<GetTracks>()
+        val trackerManager = Injekt.get<TrackerManager>()
+        val tracks = getTracks.await(manga.id)
+        val track = tracks.find { it.trackerId == trackerManager.mangaBaka.id }
+        if (track != null && track.remoteId > 0) {
+            return track.remoteId
+        }
+
+        val searchTitle = manga.ogTitle.ifBlank { manga.title }
+        val searchResults = try {
+            search(searchTitle)
+        } catch (_: Exception) {
+            emptyList()
+        }
+
+        if (searchResults.isEmpty()) return null
+
+        val normTarget = normalizeTitle(searchTitle)
+        val exactMatch = searchResults.find { candidate ->
+            val normTitle = normalizeTitle(candidate.title)
+            candidate.publishing_type.lowercase() != "novel" && normTarget.isNotBlank() && normTarget == normTitle
+        }
+
+        return exactMatch?.remote_id ?: searchResults.firstOrNull { it.publishing_type.lowercase() != "novel" }?.remote_id
+    }
+
+    private fun normalizeTitle(text: String?): String {
+        if (text.isNullOrBlank()) return ""
+        return text.lowercase()
+            .replace(Regex("[^a-z0-9\\u0600-\\u06FF\\u3040-\\u30FF\\u4E00-\\u9FFF\\uAC00-\\uD7AF]"), "")
+    }
+
     companion object {
+        private val similarCache = ConcurrentHashMap<String, List<SManga>>()
+        private val readersCache = ConcurrentHashMap<String, List<SManga>>()
+
         private const val CLIENT_ID = "zEZYMHXLWsLsafgbvJHXqzGvqQNOdkpo"
 
         private const val BASE_URL = "https://mangabaka.org"

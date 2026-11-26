@@ -19,7 +19,7 @@ class MangaBaka(id: Long) : BaseTracker(id, "MangaBaka"), DeletableTracker {
     private val json: Json by injectLazy()
 
     private val interceptor by lazy { MangaBakaInterceptor(this) }
-    private val api by lazy { MangaBakaApi(id, client, interceptor) }
+    val api by lazy { MangaBakaApi(id, client, interceptor) }
 
     override val supportsReadingDates: Boolean = true
     override val supportsPrivateTracking: Boolean = true
