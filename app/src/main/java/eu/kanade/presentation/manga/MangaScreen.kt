@@ -336,32 +336,14 @@ private sealed interface SimilarState {
 private val similarMangaCache = ConcurrentHashMap<Long, SimilarState>()
 
 private suspend fun fetchRecsFromSource(
-    recSource: TrackerRecommendationPagingSource,
+    recSource: RecommendationPagingSource,
     manga: Manga,
     networkToLocalManga: NetworkToLocalManga,
-    getTracks: GetTracks,
 ): List<Manga> {
-    val tracks = getTracks.await(manga.id)
-    val trackerId = tracks.find { it.trackerId == recSource.associatedTrackerId }?.remoteId
-
-    val recs = if (trackerId != null) {
-        recSource.getRecsById(trackerId.toString())
-    } else {
-        val title1 = manga.ogTitle.ifBlank { manga.title }
-        try {
-            recSource.getRecsBySearch(title1)
-        } catch (e: NoResultsException) {
-            val title2 = manga.title
-            if (title2.isNotBlank() && title2 != title1) {
-                try {
-                    recSource.getRecsBySearch(title2)
-                } catch (_: NoResultsException) {
-                    emptyList()
-                }
-            } else {
-                emptyList()
-            }
-        }
+    val recs = try {
+        recSource.requestNextPage(1).mangas
+    } catch (_: Exception) {
+        emptyList()
     }
 
     if (recs.isEmpty()) return emptyList()
@@ -374,7 +356,6 @@ private suspend fun fetchRecsFromSource(
 private suspend fun fetchSimilarMangas(manga: Manga, attempt: Int = 1): SimilarState {
     return try {
         val networkToLocalManga = Injekt.get<NetworkToLocalManga>()
-        val getTracks = Injekt.get<GetTracks>()
 
         val recSources = listOf(
             exh.recs.sources.MangaBakaSimilarPagingSource(manga),
@@ -383,7 +364,7 @@ private suspend fun fetchSimilarMangas(manga: Manga, attempt: Int = 1): SimilarS
 
         for (recSource in recSources) {
             try {
-                val results = fetchRecsFromSource(recSource, manga, networkToLocalManga, getTracks)
+                val results = fetchRecsFromSource(recSource, manga, networkToLocalManga)
                 if (results.isNotEmpty()) {
                     return SimilarState.Success(results)
                 }
