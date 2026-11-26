@@ -59,6 +59,8 @@ class UiPreferences(
 
     val recommendsInOverflow: Preference<Boolean> = preferenceStore.getBoolean("recommends_in_overflow", false)
 
+    val allowAdultSimilar: Preference<Boolean> = preferenceStore.getBoolean("allow_adult_similar", false)
+
     val mergeInOverflow: Preference<Boolean> = preferenceStore.getBoolean("merge_in_overflow", true)
 
     val previewsRowCount: Preference<Int> = preferenceStore.getInt("pref_previews_row_count", 4)

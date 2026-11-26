@@ -161,6 +161,14 @@ object AboutScreen : Screen() {
 
                 item {
                     TextPreferenceWidget(
+                        title = "MangaBaka",
+                        subtitle = "بيانات السلاسل المتشابهة والتوصيات والتتبع",
+                        onPreferenceClick = { uriHandler.openUri("https://mangabaka.org") },
+                    )
+                }
+
+                item {
+                    TextPreferenceWidget(
                         title = stringResource(MR.strings.licenses),
                         onPreferenceClick = { navigator.push(OpenSourceLicensesScreen()) },
                     )

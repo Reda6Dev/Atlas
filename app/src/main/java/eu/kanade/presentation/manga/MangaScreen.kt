@@ -546,6 +546,13 @@ private fun SimilarMangaSection(
                     }
                 }
 
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "المصدر: MangaBaka",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
                 Spacer(Modifier.height(8.dp))
 
                 LazyRow(
