@@ -16,7 +16,7 @@ class MangaBakaSimilarPagingSource(
 ) : RecommendationPagingSource(manga) {
 
     override val name: String
-        get() = "MangaBaka (سلاسل متشابهة)"
+        get() = "MangaBaka"
 
     override val category: StringResource
         get() = SYMR.strings.similar_titles
