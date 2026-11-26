@@ -19,6 +19,16 @@
 
 ---
 
+## لقطات من التطبيق
+
+<p align="center">
+  <img src="assets/screenshots/screenshot_1.png" width="260" alt="الشاشة الرئيسية - Atlas" />
+  <img src="assets/screenshots/screenshot_2.png" width="260" alt="المكتبة والفئات - Atlas" />
+  <img src="assets/screenshots/screenshot_3.png" width="260" alt="صفحة تفاصيل العمل - Atlas" />
+</p>
+
+---
+
 ## أبرز المميزات والتعديلات في أطلس
 
 ### 🏠 الشاشة الرئيسية الجديدة (Home)
