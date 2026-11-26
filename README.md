@@ -1,125 +1,68 @@
-| Preview Builds | Release Builds | Mihon Support Server |
-|-------|----------|----------|
-| [![Preview](https://github.com/jobobby04/TachiyomiSYPreview/workflows/Remote%20Dispatch%20Build%20App/badge.svg)](https://github.com/jobobby04/TachiyomiSYPreview/releases) | [![stable release](https://img.shields.io/github/release/jobobby04/tachiyomisy.svg?maxAge=3600&label=download)](https://github.com/jobobby04/tachiyomisy/releases/latest) | [![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=discord&labelColor=7289da&color=2c2f33&style=flat)](https://discord.gg/mihon) |
+<div align="center">
 
+# Atlas (أطلس) 📚
 
-# ![app icon](./.github/readme-images/app-icon.png)TachiyomiSY
-Mihon is a free and open source manga reader for Android 6.0 and above. This version of Mihon, TachiyomiSY was based off TachiyomiAZ. This version is meant to push forward in the ways of usability and features. TachiyomiSY tries to push forward where it can, but staying in a place where it can easily grab updates and features from the main app, it tries to make new features, or take features from other forks like J2K and Neko.
+**قارئ مانجا ومانهوا مفتوح المصدر لأندرويد بواجهة عربية كاملة وتجربة قراءة وتصفح مطوّرة**
 
-![screenshots of app](./.github/readme-images/screens.png)
+[![Latest Release](https://img.shields.io/github/v/release/Reda6Dev/Atlas?style=for-the-badge&color=success&label=%D8%A7%D9%84%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1)](https://github.com/Reda6Dev/Atlas/releases)
+[![Downloads](https://img.shields.io/github/downloads/Reda6Dev/Atlas/total?style=for-the-badge&color=blue&label=%D8%A7%D9%84%D8%AA%D8%AD%D9%85%D9%8A%D9%84%D8%A7%D8%AA)](https://github.com/Reda6Dev/Atlas/releases)
+[![License](https://img.shields.io/badge/License-Apache%202.0-orange?style=for-the-badge)](LICENSE)
+[![Platform](https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/Reda6Dev/Atlas/releases)
 
-## Features
+</div>
 
-Features of Mihon(original) include:
-* Online reading from a variety of sources
-* Local reading of downloaded content
-* A configurable reader with multiple viewers, reading directions and other settings.
-* Tracker support: [MyAnimeList](https://myanimelist.net/), [AniList](https://anilist.co/), [Kitsu](https://kitsu.app/), [MangaUpdates](https://mangaupdates.com), [Shikimori](https://shikimori.one), and [Bangumi](https://bgm.tv/) support
-* Categories to organize your library
-* Light and dark themes
-* Schedule updating your library for new chapters
-* Create backups locally to read offline or to your desired cloud service
+---
 
-Features of TachiyomiSY include:
-* Latest tab, store up to 5 sources where you can easily view the latest manga by viewing the tab
-* Automatic webtoon detection, allowing the reader to switch to webtoon mode automatically when viewing one
-* Manga recommendations, uses MAL and Anilist, as well as Neko Similar Manga for Mangadex manga(Thanks to Az, She11Shocked, Carlos, and Goldbattle)
-* Lewd filter, hide the lewd manga in your library when you want to
-* Tracking filter, filter your tracked manga so you can see them or see non-tracked manga, made by She11Shocked
-* Search tracking status in library, made by She11Shocked
-* Custom categories for sources, liked the pinned sources, but you can make your own versions and put any sources in them
-* Manga info edit
-* Manga Cover view + share and save
-* Dynamic Categories, view the library in multiple ways
-* Smart background for reading modes like LTR or Vertical, changes the background based on the page color
-* Force disable webtoon zoom
-* Continue reading button in library
-* Hentai features enable/disable, in advanced settings
-* Quick clean titles
-* Source migration, migrate all your manga from one source to another
-* Saving searches
-* Autoscroll
-* Page preload customization
-* Customize image cache size
-* Batch import of custom sources and featured extensions
-* Advanced source settings page, searching, enable/disable all
-* Click tag for local search, long click tag for global search
-* Merge multiple of the same manga from different sources
-* Drag and drop library sorting
-* Library search engine, includes exclude, quotes as absolute, and a bunch of other ways to search
-* New E-Hentai/ExHentai features, such as language settings and watched list settings
-* Enhanced views for internal and integrated sources
-* Enhanced usability for internal and delegated sources
+## نظرة عامة
 
-Custom sources:
-* E-Hentai/ExHentai
+تطبيق **Atlas (أطلس)** هو قارئ مانجا ومانهوا مجاني ومفتوح المصدر لأجهزة أندرويد، يرتكز على أساس **Mihon / TachiyomiSY** مع هوية بصرية مخصصة، وتعريب شامل للواجهة والإعدادات، وإضافات عملية لتحسين القراءة واكتشاف الأعمال والشخصيات وتنظيم المكتبة.
 
-Additional features for some extensions, features include custom description, opening in app, batch add to library, and a bunch of other things based on the source:
-* 8Muses (EroMuse)
-* HBrowse
-* Mangadex
-* NHentai
-* Puruin
-* LANraragi
+---
 
-## Download
-Get the app from our [releases page](https://github.com/jobobby04/tachiyomisy/releases/latest).
+## أبرز المميزات والتعديلات في أطلس
 
-If you want to try new features before they get to the stable release, you can download the preview version [here](https://github.com/jobobby04/tachiyomisypreview/releases).
+### 🏠 الشاشة الرئيسية الجديدة (Home)
+- **التبويب الافتراضي للتطبيق:** واجهة رئيسية مخصصة لتصفح المصادر بسرعة مع إخفاء المصادر غير المرغوب فيها افتراضياً والتفعيل التلقائي للمصادر الجديدة عند تهيئتها.
+- **سحب وتنقل سلس:** التبديل بين المصادر بالسحب الأفقي مع تمرير تلقائي لشريط المصادر، وإخفاء/إظهار الشريط تلقائياً أثناء التمرير، ودعم السحب لأسفل للتحديث (`Pull to refresh`).
+- **ترتيب وتخصيص المصادر:** إمكانية إعادة ترتيب مصادر الشاشة الرئيسية وحفظ الترتيب في التفضيلات.
+- **إدارة سريعة من البطاقات:** الضغط المطوّل على أي عمل لفتح نافذة تعيين الفئات مباشرة من الشاشة الرئيسية.
+- **الفتح على الأحدث تلقائياً:** فتح المصادر المدعومة على قسم «الأحدث» افتراضياً للوصول السريع إلى أحدث الفصول.
 
-## Translation
-Feel free to translate the project on [Weblate](https://hosted.weblate.org/projects/mihon/tachiyomisy/)
+### 🎭 الشخصيات والتوصيات (AniList & MangaBaka)
+- **تبويب الشخصيات في صفحة العمل:** جلب وعرض شخصيات المانغا عبر **AniList GraphQL** مع تخزين مؤقت سريع ومطابقة ذكية.
+- **صفحة تفاصيل الشخصية والمفضلة:** عرض تفاصيل الشخصية مع دعم إخفاء وإظهار الحرق (Spoilers)، وشاشة وشبكة مخصصة لـ **الشخصيات المفضلة** في القائمة الجانبية.
+- **التوصيات والأعمال المشابهة (MangaBaka):** صفّان مخصصان لـ **«أعمال مشابهة»** و**«قرّاء أحبوا أيضاً»** داخل صفحة العمل مع فلترة وقائية دائمة.
 
-<details><summary>Translation Progress</summary>
-<a href="https://hosted.weblate.org/engage/mihon/">
-<img src="https://hosted.weblate.org/widgets/mihon/-/tachiyomisy/multi-auto.svg" alt="Translation status" />
-</a>
-</details>
+### 🗂️ المكتبة وتنظيم الفئات
+- **5 فئات جاهزة تلقائياً:** إنشاء خمس فئات افتراضية للمستخدم الجديد لبدء التنظيم فوراً.
+- **تحسين شريط الفئات والعرض:** تمرير تلقائي لشريط الفئات لمتابعة الفئة النشطة، وخيارات عرض مرنة (شبكة مريحة بعمودين، شبكة مدمجة، شبكة 3 أعمدة، وقائمة).
 
-## Issues, Feature Requests and Contributing
+### 🎨 تخصيص الواجهة ودعم العربية (RTL)
+- **تغيير حجم الواجهة (UI Scale):** خيار مدمج في إعدادات المظهر لتكبير أو تصغير عناصر الواجهة بالكامل مع معاينة حيّة فورية.
+- **دعم عربي متكامل:** تعريب كامل للواجهة والنصوص، وتوافق السحب الأفقي بين تبويبات التفاصيل والفصول في صفحة العمل مع اتجاه اليمين إلى اليسار (RTL).
+- **تصميم مدمج وأنيق:** شريط علوي مضغوط بأيقونات وعناوين موحّدة الحجم، وقائمة جانبية بسحب دقيق من الحافة، ومظهر فاتح وداكن قابل للتخصيص.
 
-Please make sure to read the full guidelines. Your issue may be closed without warning if you do not.
+### 📖 مزايا القارئ الأساسية
+- قراءة عبر الإنترنت من مصادر متعددة أو قراءة الفصول المحمّلة دون اتصال.
+- قارئ قابل للتخصيص بالكامل مع كشف تلقائي لوضع الويبتون (Webtoon) والتمرير التلقائي والخلفية الذكية.
+- مزامنة التتبع مع **AniList** و**MyAnimeList** و**Kitsu** و**MangaUpdates** و**Shikimori** و**Bangumi**.
+- نسخ احتياطي محلي وسحابي، وجدولة تحديث المكتبة تلقائياً، وترحيل الأعمال بين المصادر.
 
-<details><summary>Issues</summary>
+---
 
-1. **Before reporting a new issue, take a look at the [FAQ](https://mihon.app/docs/faq/general), the [changelog](https://github.com/jobobby04/tachiyomisy/releases) and the already opened [issues](https://github.com/jobobby04/tachiyomisy/issues).**
-2. If you are unsure, ask here: [![Discord](https://img.shields.io/discord/1195734228319617024.svg)](https://discord.gg/mihon)
+## التحميل والتثبيت
 
-</details>
+1. انتقل إلى صفحة [**الإصدارات (Releases)**](https://github.com/Reda6Dev/Atlas/releases) ونزّل أحدث ملف `APK` (مثل `Atlas v1.14.6`).
+2. افتح الملف على هاتفك الأندرويد وامنح صلاحية التثبيت عند الطلب.
+3. شغّل التطبيق، وأضف مصادرك أو استعد نسختك الاحتياطية وابدأ القراءة.
 
-<details><summary>Bugs</summary>
+---
 
-* Include version (More → About → Version)
-* If not latest, try updating, it may have already been solved
-* Preview version is equal to the number of commits as seen on the main page
-* Include steps to reproduce (if not obvious from description)
-* Include screenshot (if needed)
-* If it could be device-dependent, try reproducing on another device (if possible)
-* Don't group unrelated requests into one issue
+## الترخيص والحقوق
 
-Use the [issue forms](https://github.com/jobobby04/TachiyomiSY/issues/new/choose) to submit a bug.
+```text
+Copyright (c) 2026 Reda6Dev - Atlas Project Modifications
+Based on TachiyomiSY / Mihon (licensed under the Apache License, Version 2.0).
+```
 
-</details>
-
-<details><summary>Feature Requests</summary>
-
-* Write a detailed issue, explaining what it should do or how. Avoid writing just "like X app does"
-* Include screenshot (if needed)
-
-Source requests are not accepted.
-</details>
-
-<details><summary>Contributing</summary>
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md).
-</details>
-
-<details><summary>Code of Conduct</summary>
-
-See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
-</details>
-
-## FAQ
-
-[See our website.](https://mihon.app/)
-You can also reach out to us on [Discord](https://discord.gg/mihon).
+هذا المشروع مرخص بموجب رخصة [**Apache License 2.0**](LICENSE). جميع حقوق المشروع الأصلي محفوظة لمساهمي Mihon وTachiyomiSY.
