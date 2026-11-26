@@ -28,11 +28,14 @@ class BrowseRecommendsScreenModel(
     val recommendationSource: RecommendationPagingSource
         get() = when (args) {
             is BrowseRecommendsScreen.Args.MergedSourceMangas -> StaticResultPagingSource(args.results)
-            is BrowseRecommendsScreen.Args.SingleSourceManga -> RecommendationPagingSource.createSources(
-                runBlocking { getManga.await(args.mangaId)!! },
-                source,
-            ).first {
-                it::class.qualifiedName == args.recommendationSourceName
+            is BrowseRecommendsScreen.Args.SingleSourceManga -> {
+                val manga = runBlocking { getManga.await(args.mangaId) } ?: throw tachiyomi.data.source.NoResultsException()
+                RecommendationPagingSource.createSources(
+                    manga,
+                    source,
+                ).firstOrNull {
+                    it::class.qualifiedName == args.recommendationSourceName
+                } ?: throw tachiyomi.data.source.NoResultsException()
             }
         }
 

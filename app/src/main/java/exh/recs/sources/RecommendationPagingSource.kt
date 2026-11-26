@@ -47,7 +47,7 @@ abstract class RecommendationPagingSource(
     companion object {
         private const val ENABLE_MANGAUPDATES = false
 
-        fun createSources(manga: Manga, source: Source): List<RecommendationPagingSource> {
+        fun createSources(manga: Manga, source: Source? = null): List<RecommendationPagingSource> {
             return buildList {
                 add(AniListPagingSource(manga))
                 add(MangaBakaSimilarPagingSource(manga))
@@ -59,12 +59,12 @@ abstract class RecommendationPagingSource(
                 // add(MyAnimeListPagingSource(manga))
 
                 // Only include MangaDex if the delegate sources are enabled and the source is MD-based
-                if (source.isMdBasedSource() && Injekt.get<DelegateSourcePreferences>().delegateSources.get()) {
+                if (source?.isMdBasedSource() == true && Injekt.get<DelegateSourcePreferences>().delegateSources.get()) {
                     add(MangaDexSimilarPagingSource(manga, source.getMainSource() as MangaDex))
                 }
 
                 // Only include Comick if the source manga is from there
-                if (source.isComickSource()) {
+                if (source?.isComickSource() == true) {
                     add(ComickPagingSource(manga, source))
                 }
             }.sortedWith(compareBy({ it.name }, { it.category.resourceId }))
