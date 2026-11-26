@@ -340,18 +340,11 @@ private fun HomeTopAppBar(
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
                     ) {
-                        if (isRefreshing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp,
-                            )
-                        } else {
-                            Icon(
-                                Icons.Default.MoreVert,
-                                contentDescription = "خيارات أكثر",
-                                modifier = Modifier.size(20.dp),
-                            )
-                        }
+                        Icon(
+                            Icons.Default.MoreVert,
+                            contentDescription = "خيارات أكثر",
+                            modifier = Modifier.size(20.dp),
+                        )
                     }
 
                     DropdownMenu(
