@@ -772,4 +772,20 @@
     <string name="default_category_reading">Reading</string>
     <string name="default_category_on_hold">On hold</string>
     <string name="default_category_dropped">Dropped</string>
+
+    <!-- Localized Error Messages -->
+    <string name="error_unknown_host">Could not reach the server. Check your connection or source URL</string>
+    <string name="error_timeout">Connection timed out. Please try again</string>
+    <string name="error_ssl">Secure connection failed (SSL certificate error)</string>
+    <string name="error_connection_failed">Could not connect to the server</string>
+    <string name="error_cloudflare">Protected by Cloudflare. Open in WebView to bypass</string>
+    <string name="error_http_403">Access denied by server. Try opening in WebView</string>
+    <string name="error_http_404">Content not found on this source</string>
+    <string name="error_http_429">Too many requests. Please wait and try again</string>
+    <string name="error_http_503">Server temporarily unavailable or behind Cloudflare</string>
+    <string name="error_http_5xx">Temporary server error. Please try again later</string>
+    <string name="error_http_other">Failed to load from server. Try opening in WebView</string>
+    <string name="error_generic">An unexpected error occurred while loading</string>
+    <string name="home_no_enabled_sources">No enabled sources for Home</string>
+    <string name="home_source_unavailable">Could not load content from the current source</string>
 </resources>

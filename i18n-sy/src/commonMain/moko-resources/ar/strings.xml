@@ -665,4 +665,20 @@
     <string name="default_category_reading">أقرأه حاليًا</string>
     <string name="default_category_on_hold">أكمله لاحقًا</string>
     <string name="default_category_dropped">لا أرغب بقراءته</string>
+
+    <!-- Localized Error Messages -->
+    <string name="error_unknown_host">تعذّر العثور على الخادم، تحقق من الاتصال أو عنوان المصدر</string>
+    <string name="error_timeout">انتهت مهلة الاتصال بالخادم، حاول مجددًا</string>
+    <string name="error_ssl">فشل الاتصال الآمن بالخادم (شهادة SSL غير صالحة أو محجوبة)</string>
+    <string name="error_connection_failed">تعذّر الاتصال بالخادم أو انقطع الاتصال</string>
+    <string name="error_cloudflare">المصدر محمي بـ Cloudflare، افتحه في المتصفح الداخلي لتجاوزه</string>
+    <string name="error_http_403">تم رفض الوصول من الخادم، جرّب فتح المصدر في المتصفح الداخلي</string>
+    <string name="error_http_404">المحتوى غير موجود أو تم نقله من المصدر</string>
+    <string name="error_http_429">تم إرسال طلبات كثيرة للمصدر، انتظر قليلًا ثم أعد المحاولة</string>
+    <string name="error_http_503">الخادم غير متاح مؤقتًا أو محمي بـ Cloudflare، جرّب المتصفح الداخلي أو أعد المحاولة</string>
+    <string name="error_http_5xx">خطأ مؤقت في خادم المصدر، حاول لاحقًا</string>
+    <string name="error_http_other">تعذّر تحميل المحتوى من الخادم، جرّب المتصفح الداخلي</string>
+    <string name="error_generic">حدث خطأ غير متوقع أثناء التحميل</string>
+    <string name="home_no_enabled_sources">لا توجد مصادر مفعّلة للشاشة الرئيسية</string>
+    <string name="home_source_unavailable">تعذّر الوصول لمحتوى المصدر الحالي</string>
 </resources>
