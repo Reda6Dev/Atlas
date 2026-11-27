@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.14.7" changeDate="November 2026">
+        <changelogtext>رسائل الأخطاء أصبحت معرّبة وبنفس شكل بقية الشاشات، وسحب أنعم بين تبويبات صفحة العمل (إزالة سحب الفصول)، وتحديث شاشة «حول» وروابط المساعدة.</changelogtext>
+        <changelogtext>Error messages are localized and match the rest of the app screens, smoother swiping between manga page tabs (removed chapter page swipe), and updated About screen and help links.</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.14.6" changeDate="November 2026">
         <changelogtext>تحسينات في الواجهة: شريط التبويبات في صفحة العمل، وأيقونة الرئيسية، وإزالة دوّارة التحميل من الشريط العلوي.</changelogtext>
         <changelogtext>UI improvements: manga page tabs bar, home icon, and removing loading spinner from top bar.</changelogtext>
