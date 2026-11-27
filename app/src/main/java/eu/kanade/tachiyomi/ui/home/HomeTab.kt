@@ -8,6 +8,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalUriHandler
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -18,7 +19,9 @@ import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import kotlinx.coroutines.flow.collectLatest
+import tachiyomi.core.common.Constants
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -46,6 +49,7 @@ object HomeTab : Tab {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        val uriHandler = LocalUriHandler.current
         val screenModel = rememberScreenModel { HomeScreenModel() }
         val state by screenModel.state.collectAsState()
 
@@ -87,6 +91,19 @@ object HomeTab : Tab {
             onItemLongClick = { item -> screenModel.onItemLongClick(item) },
             onSetMangaCategories = { manga, categories -> screenModel.setMangaCategories(manga, categories) },
             onCloseDialog = { screenModel.closeDialog() },
+            canOpenWebView = { errorSourceId -> screenModel.getWebViewSource(errorSourceId) != null },
+            onOpenWebView = { errorSourceId ->
+                screenModel.getWebViewSource(errorSourceId)?.let { source ->
+                    navigator.push(
+                        WebViewScreen(
+                            url = source.baseUrl,
+                            initialTitle = source.name,
+                            sourceId = source.id,
+                        ),
+                    )
+                }
+            },
+            onHelpClick = { uriHandler.openUri(Constants.URL_HELP) },
         )
     }
 }

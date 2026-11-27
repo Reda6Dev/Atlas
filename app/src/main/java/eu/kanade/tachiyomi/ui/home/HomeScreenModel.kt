@@ -6,7 +6,10 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.presentation.util.FormattedError
+import eu.kanade.presentation.util.toFormattedError
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.home.model.HomeItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -73,7 +76,8 @@ class HomeScreenModel(
         val isLoadingLatest: Boolean = true,
         val isLoadingMoreLatest: Boolean = false,
         val hasMoreLatest: Boolean = true,
-        val latestError: String? = null,
+        val latestError: FormattedError? = null,
+        val latestErrorSourceId: Long? = null,
 
         // Discover Manga Tab State
         val discoverItems: List<HomeItem> = emptyList(),
@@ -81,7 +85,8 @@ class HomeScreenModel(
         val isLoadingDiscover: Boolean = true,
         val isLoadingMoreDiscover: Boolean = false,
         val hasMoreDiscover: Boolean = true,
-        val discoverError: String? = null,
+        val discoverError: FormattedError? = null,
+        val discoverErrorSourceId: Long? = null,
     )
 
     sealed interface Dialog {
@@ -181,10 +186,19 @@ class HomeScreenModel(
                 isLoadingLatest = true,
                 isLoadingDiscover = true,
                 latestError = null,
+                latestErrorSourceId = null,
                 discoverError = null,
+                discoverErrorSourceId = null,
             )
         }
         loadData()
+    }
+
+    fun getWebViewSource(preferredSourceId: Long?): HttpSource? {
+        val candidateId = preferredSourceId ?: state.value.selectedSourceId
+        val direct = candidateId?.let { sourceManager.get(it) as? HttpSource }
+        if (direct != null) return direct
+        return getActiveSources().singleOrNull() as? HttpSource
     }
 
     fun openSourceSettingsDialog() {
@@ -300,7 +314,9 @@ class HomeScreenModel(
             it.copy(
                 isRefreshing = true,
                 latestError = null,
+                latestErrorSourceId = null,
                 discoverError = null,
+                discoverErrorSourceId = null,
                 latestChaptersPage = 0,
                 discoverPage = 0,
                 hasMoreLatest = true,
@@ -411,12 +427,19 @@ class HomeScreenModel(
 
         if (targetSources.isEmpty()) {
             if (state.value.selectedSourceId == requestSelectedSourceId) {
+                val context = Injekt.get<Application>()
+                val errorMessage = if (allSources.isEmpty()) {
+                    context.stringResource(SYMR.strings.home_no_enabled_sources)
+                } else {
+                    context.stringResource(SYMR.strings.home_source_unavailable)
+                }
                 mutableState.update {
                     it.copy(
                         availableSources = availableFilterList,
                         isLoadingLatest = false,
                         isLoadingMoreLatest = false,
-                        latestError = if (allSources.isEmpty()) "لا توجد مصادر مفعلة للشاشة الرئيسية." else "تعذر التوصل لمحتوى من المصدر المالي.",
+                        latestError = FormattedError(errorMessage),
+                        latestErrorSourceId = null,
                     )
                 }
             }
@@ -426,6 +449,7 @@ class HomeScreenModel(
         val combinedItems = mutableListOf<HomeItem>()
         var anySuccess = false
         var lastException: Throwable? = null
+        var lastFailedSourceId: Long? = null
         var hasNextPageAny = false
 
         for (source in targetSources) {
@@ -453,6 +477,7 @@ class HomeScreenModel(
                 anySuccess = true
             } else {
                 lastException = result.exceptionOrNull()
+                lastFailedSourceId = source.id
             }
         }
 
@@ -473,15 +498,20 @@ class HomeScreenModel(
                     latestChaptersPage = page,
                     hasMoreLatest = hasNextPageAny && combinedItems.isNotEmpty(),
                     latestError = null,
+                    latestErrorSourceId = null,
                 )
             }
         } else {
+            val context = Injekt.get<Application>()
+            val formatted = lastException?.toFormattedError(context)
+                ?: FormattedError(context.stringResource(SYMR.strings.error_generic))
             mutableState.update {
                 it.copy(
                     availableSources = availableFilterList,
                     isLoadingLatest = false,
                     isLoadingMoreLatest = false,
-                    latestError = lastException?.localizedMessage ?: "تعذر تحميل البيانات من المصادر المتاحة.",
+                    latestError = formatted,
+                    latestErrorSourceId = lastFailedSourceId,
                 )
             }
         }
@@ -508,12 +538,19 @@ class HomeScreenModel(
 
         if (targetSources.isEmpty()) {
             if (state.value.selectedSourceId == requestSelectedSourceId) {
+                val context = Injekt.get<Application>()
+                val errorMessage = if (allSources.isEmpty()) {
+                    context.stringResource(SYMR.strings.home_no_enabled_sources)
+                } else {
+                    context.stringResource(SYMR.strings.home_source_unavailable)
+                }
                 mutableState.update {
                     it.copy(
                         availableSources = availableFilterList,
                         isLoadingDiscover = false,
                         isLoadingMoreDiscover = false,
-                        discoverError = if (allSources.isEmpty()) "لا توجد مصادر مفعلة للشاشة الرئيسية." else "تعذر التوصل لمحتوى من المصدر المالي.",
+                        discoverError = FormattedError(errorMessage),
+                        discoverErrorSourceId = null,
                     )
                 }
             }
@@ -523,6 +560,7 @@ class HomeScreenModel(
         val combinedItems = mutableListOf<HomeItem>()
         var anySuccess = false
         var lastException: Throwable? = null
+        var lastFailedSourceId: Long? = null
         var hasNextPageAny = false
 
         for (source in targetSources) {
@@ -550,6 +588,7 @@ class HomeScreenModel(
                 anySuccess = true
             } else {
                 lastException = result.exceptionOrNull()
+                lastFailedSourceId = source.id
             }
         }
 
@@ -570,15 +609,20 @@ class HomeScreenModel(
                     discoverPage = page,
                     hasMoreDiscover = hasNextPageAny && combinedItems.isNotEmpty(),
                     discoverError = null,
+                    discoverErrorSourceId = null,
                 )
             }
         } else {
+            val context = Injekt.get<Application>()
+            val formatted = lastException?.toFormattedError(context)
+                ?: FormattedError(context.stringResource(SYMR.strings.error_generic))
             mutableState.update {
                 it.copy(
                     availableSources = availableFilterList,
                     isLoadingDiscover = false,
                     isLoadingMoreDiscover = false,
-                    discoverError = lastException?.localizedMessage ?: "تعذر تحميل البيانات من المصادر المتاحة.",
+                    discoverError = formatted,
+                    discoverErrorSourceId = lastFailedSourceId,
                 )
             }
         }

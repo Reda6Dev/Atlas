@@ -37,6 +37,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.FilterList
@@ -44,6 +45,8 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -63,6 +66,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -77,14 +81,17 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.LocalOpenDrawer
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.presentation.util.FormattedError
 import eu.kanade.tachiyomi.ui.home.HomeScreenModel
 import eu.kanade.tachiyomi.ui.home.HomeSourceDialogItem
 import eu.kanade.tachiyomi.ui.home.HomeSourceFilter
@@ -92,7 +99,11 @@ import eu.kanade.tachiyomi.ui.home.HomeTabOption
 import eu.kanade.tachiyomi.ui.home.model.HomeItem
 import kotlinx.coroutines.launch
 import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.PullRefresh
+import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.screens.EmptyScreen
+import tachiyomi.presentation.core.screens.EmptyScreenAction
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.primaryTextColor
 import tachiyomi.domain.manga.model.MangaCover as DomainMangaCover
@@ -117,6 +128,9 @@ fun HomeScreen(
     onItemLongClick: (HomeItem) -> Unit = {},
     onSetMangaCategories: (tachiyomi.domain.manga.model.Manga, List<Long>) -> Unit = { _, _ -> },
     onCloseDialog: () -> Unit = {},
+    canOpenWebView: (Long?) -> Boolean = { false },
+    onOpenWebView: (Long?) -> Unit = {},
+    onHelpClick: () -> Unit = {},
 ) {
     var isFilterRowVisible by remember { mutableStateOf(true) }
     val nestedScrollConnection = remember {
@@ -214,6 +228,9 @@ fun HomeScreen(
                                         onRefresh = onRefresh,
                                         onLoadMore = onLoadMoreLatestChapters,
                                         onItemClick = onItemClick,
+                                        canOpenWebView = canOpenWebView,
+                                        onOpenWebView = onOpenWebView,
+                                        onHelpClick = onHelpClick,
                                     )
                                 }
                                 HomeTabOption.DiscoverManga -> {
@@ -222,6 +239,9 @@ fun HomeScreen(
                                         onRefresh = onRefresh,
                                         onLoadMore = onLoadMoreDiscover,
                                         onItemClick = onItemClick,
+                                        canOpenWebView = canOpenWebView,
+                                        onOpenWebView = onOpenWebView,
+                                        onHelpClick = onHelpClick,
                                     )
                                 }
                             }
@@ -234,6 +254,9 @@ fun HomeScreen(
                                     onRefresh = onRefresh,
                                     onLoadMore = onLoadMoreLatestChapters,
                                     onItemClick = onItemClick,
+                                    canOpenWebView = canOpenWebView,
+                                    onOpenWebView = onOpenWebView,
+                                    onHelpClick = onHelpClick,
                                 )
                             }
                             HomeTabOption.DiscoverManga -> {
@@ -242,6 +265,9 @@ fun HomeScreen(
                                     onRefresh = onRefresh,
                                     onLoadMore = onLoadMoreDiscover,
                                     onItemClick = onItemClick,
+                                    canOpenWebView = canOpenWebView,
+                                    onOpenWebView = onOpenWebView,
+                                    onHelpClick = onHelpClick,
                                 )
                             }
                         }
@@ -650,6 +676,9 @@ private fun LatestChaptersTabContent(
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     onItemClick: (HomeItem) -> Unit,
+    canOpenWebView: (Long?) -> Boolean,
+    onOpenWebView: (Long?) -> Unit,
+    onHelpClick: () -> Unit,
 ) {
     val gridState = rememberLazyGridState()
 
@@ -684,9 +713,16 @@ private fun LatestChaptersTabContent(
                 LoadingScreen()
             }
             state.latestError != null && state.latestChaptersItems.isEmpty() -> {
+                val errorSourceId = state.latestErrorSourceId
                 HomeErrorScreen(
-                    errorMessage = state.latestError,
+                    error = state.latestError,
                     onRetry = onRefresh,
+                    onOpenWebView = if (canOpenWebView(errorSourceId)) {
+                        { onOpenWebView(errorSourceId) }
+                    } else {
+                        null
+                    },
+                    onHelpClick = onHelpClick,
                 )
             }
             else -> {
@@ -701,7 +737,7 @@ private fun LatestChaptersTabContent(
                     if (state.latestError != null) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
                             HomeErrorBanner(
-                                message = state.latestError,
+                                error = state.latestError,
                                 onRetry = onRefresh,
                             )
                         }
@@ -748,6 +784,9 @@ private fun DiscoverMangaTabContent(
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     onItemClick: (HomeItem) -> Unit,
+    canOpenWebView: (Long?) -> Boolean,
+    onOpenWebView: (Long?) -> Unit,
+    onHelpClick: () -> Unit,
 ) {
     val gridState = rememberLazyGridState()
 
@@ -782,9 +821,16 @@ private fun DiscoverMangaTabContent(
                 LoadingScreen()
             }
             state.discoverError != null && state.discoverItems.isEmpty() -> {
+                val errorSourceId = state.discoverErrorSourceId
                 HomeErrorScreen(
-                    errorMessage = state.discoverError,
+                    error = state.discoverError,
                     onRetry = onRefresh,
+                    onOpenWebView = if (canOpenWebView(errorSourceId)) {
+                        { onOpenWebView(errorSourceId) }
+                    } else {
+                        null
+                    },
+                    onHelpClick = onHelpClick,
                 )
             }
             else -> {
@@ -799,7 +845,7 @@ private fun DiscoverMangaTabContent(
                     if (state.discoverError != null) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
                             HomeErrorBanner(
-                                message = state.discoverError,
+                                error = state.discoverError,
                                 onRetry = onRefresh,
                             )
                         }
@@ -863,59 +909,78 @@ private fun getItemKey(item: HomeItem): String {
 
 @Composable
 private fun HomeErrorScreen(
-    errorMessage: String,
+    error: FormattedError,
     onRetry: () -> Unit,
+    onOpenWebView: (() -> Unit)?,
+    onHelpClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(16.dp),
-        ) {
-            Text(
-                text = errorMessage,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.error,
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onRetry) {
-                Text(text = "إعادة المحاولة")
-            }
-        }
-    }
+    EmptyScreen(
+        message = error.message,
+        secondaryMessage = error.detail,
+        modifier = modifier,
+        actions = listOfNotNull(
+            EmptyScreenAction(
+                stringRes = MR.strings.action_retry,
+                icon = Icons.Outlined.Refresh,
+                onClick = onRetry,
+            ),
+            if (onOpenWebView != null) {
+                EmptyScreenAction(
+                    stringRes = MR.strings.action_open_in_web_view,
+                    icon = Icons.Outlined.Public,
+                    onClick = onOpenWebView,
+                )
+            } else {
+                null
+            },
+            EmptyScreenAction(
+                stringRes = MR.strings.label_help,
+                icon = Icons.AutoMirrored.Outlined.HelpOutline,
+                onClick = onHelpClick,
+            ),
+        ),
+    )
 }
 
 @Composable
 private fun HomeErrorBanner(
-    message: String,
+    error: FormattedError,
     onRetry: () -> Unit,
 ) {
     Surface(
-        color = MaterialTheme.colorScheme.errorContainer,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(12.dp),
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onErrorContainer,
-                modifier = Modifier.weight(1f),
-            )
-            Button(onClick = onRetry) {
-                Text(text = "إعادة المحاولة")
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = error.message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (!error.detail.isNullOrBlank()) {
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        Text(
+                            text = error.detail,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
+                            modifier = Modifier.padding(top = 2.dp),
+                        )
+                    }
+                }
+            }
+            TextButton(onClick = onRetry) {
+                Text(text = stringResource(MR.strings.action_retry))
             }
         }
     }
