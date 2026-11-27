@@ -94,7 +94,7 @@ import uy.kohesive.injekt.api.get
 object SettingsDataScreen : SearchableSettings {
 
     val restorePreferenceKeyString = MR.strings.label_backup
-    const val HELP_URL = "https://mihon.app/docs/faq/storage"
+    const val HELP_URL = "https://reda6dev.github.io/atlas.html#help-backup"
 
     @ReadOnlyComposable
     @Composable

@@ -56,7 +56,7 @@ internal class GuidesStep(
     }
 }
 
-const val GETTING_STARTED_URL = "https://mihon.app/docs/guides/getting-started"
+const val GETTING_STARTED_URL = "https://reda6dev.github.io/atlas.html#help-getting-started"
 
 @PreviewLightDark
 @Composable

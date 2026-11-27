@@ -35,7 +35,7 @@ class BangumiInterceptor(private val bangumi: Bangumi) : Interceptor {
         return originalRequest.newBuilder()
             .header(
                 "User-Agent",
-                "jobobby04/TachiyomiSY/v${BuildConfig.VERSION_NAME} (Android) (http://github.com/jobobby04/tachiyomisy)",
+                "Atlas v${BuildConfig.VERSION_NAME} (Android) (https://github.com/Reda6Dev/Atlas)",
             )
             .apply {
                 addHeader("Authorization", "Bearer ${currAuth.accessToken}")

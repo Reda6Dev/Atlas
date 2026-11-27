@@ -1,8 +1,8 @@
 package tachiyomi.core.common
 
 object Constants {
-    const val URL_HELP = "https://mihon.app/docs/guides/troubleshooting/"
-    const val URL_HELP_UPCOMING = "https://mihon.app/docs/faq/updates/upcoming"
+    const val URL_HELP = "https://reda6dev.github.io/atlas.html#help"
+    const val URL_HELP_UPCOMING = "https://reda6dev.github.io/atlas.html#help-library"
 
     const val MANGA_EXTRA = "manga"
 
