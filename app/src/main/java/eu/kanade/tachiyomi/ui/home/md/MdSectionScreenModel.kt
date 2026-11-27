@@ -1,7 +1,10 @@
 package eu.kanade.tachiyomi.ui.home.md
 
+import android.app.Application
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.presentation.util.FormattedError
+import eu.kanade.presentation.util.toFormattedError
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.model.SManga
@@ -32,7 +35,7 @@ class MdSectionScreenModel(
         val items: List<HomeItem> = emptyList(),
         val page: Int = 0,
         val hasMore: Boolean = true,
-        val error: String? = null,
+        val error: FormattedError? = null,
     )
 
     private val mangadexService by lazy {
@@ -118,7 +121,7 @@ class MdSectionScreenModel(
                         isLoading = false,
                         isRefreshing = false,
                         isLoadingMore = false,
-                        error = e.localizedMessage ?: "حدث خطأ أثناء تحميل البيانات",
+                        error = e.toFormattedError(Injekt.get<Application>()),
                     )
                 }
             }

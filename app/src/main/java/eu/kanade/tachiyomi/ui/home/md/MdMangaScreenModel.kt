@@ -1,7 +1,10 @@
 package eu.kanade.tachiyomi.ui.home.md
 
+import android.app.Application
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.presentation.util.FormattedError
+import eu.kanade.presentation.util.toFormattedError
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.network.NetworkHelper
 import exh.md.dto.ChapterDataDto
@@ -26,7 +29,7 @@ class MdMangaScreenModel(
         val isRefreshing: Boolean = false,
         val manga: MangaDataDto? = null,
         val chapters: List<ChapterDataDto> = emptyList(),
-        val error: String? = null,
+        val error: FormattedError? = null,
         val chaptersLoading: Boolean = true,
         val page: Int = 0,
         val hasMore: Boolean = true,
@@ -62,7 +65,13 @@ class MdMangaScreenModel(
             }.onSuccess { response ->
                 mutableState.update { it.copy(isLoading = false, isRefreshing = false, manga = response.data) }
             }.onFailure { e ->
-                mutableState.update { it.copy(isLoading = false, isRefreshing = false, error = e.localizedMessage) }
+                mutableState.update {
+                    it.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        error = e.toFormattedError(Injekt.get<Application>()),
+                    )
+                }
             }
         }
     }
@@ -92,7 +101,12 @@ class MdMangaScreenModel(
                     )
                 }
             }.onFailure { e ->
-                mutableState.update { it.copy(chaptersLoading = false, error = e.localizedMessage) }
+                mutableState.update {
+                    it.copy(
+                        chaptersLoading = false,
+                        error = e.toFormattedError(Injekt.get<Application>()),
+                    )
+                }
             }
         }
     }

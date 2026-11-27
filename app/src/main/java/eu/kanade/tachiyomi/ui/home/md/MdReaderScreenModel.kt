@@ -1,7 +1,10 @@
 package eu.kanade.tachiyomi.ui.home.md
 
+import android.app.Application
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.presentation.util.FormattedError
+import eu.kanade.presentation.util.toFormattedError
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.network.NetworkHelper
 import exh.md.service.MangaDexService
@@ -21,7 +24,7 @@ class MdReaderScreenModel(
         val isLoading: Boolean = true,
         val chapterTitle: String = "جارٍ التحميل...",
         val pageUrls: List<String> = emptyList(),
-        val error: String? = null,
+        val error: FormattedError? = null,
     )
 
     private val mangadexService by lazy {
@@ -73,7 +76,7 @@ class MdReaderScreenModel(
                 mutableState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.localizedMessage ?: "حدث خطأ أثناء تحميل الصفحات",
+                        error = e.toFormattedError(Injekt.get<Application>()),
                     )
                 }
             }

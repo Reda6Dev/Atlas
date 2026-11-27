@@ -18,7 +18,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -46,6 +46,9 @@ import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.tachiyomi.ui.home.model.HomeItem
 import eu.kanade.tachiyomi.ui.home.model.HomeSectionType
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.screens.EmptyScreen
+import tachiyomi.presentation.core.screens.EmptyScreenAction
 import tachiyomi.domain.manga.model.MangaCover as DomainMangaCover
 
 class MdSectionScreen(val sectionType: HomeSectionType) : Screen {
@@ -99,21 +102,18 @@ class MdSectionScreen(val sectionType: HomeSectionType) : Screen {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
                     state.error != null && state.items.isEmpty() -> {
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Text(
-                                text = state.error!!,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(onClick = { screenModel.refresh() }) {
-                                Text(text = "إعادة المحاولة")
-                            }
-                        }
+                        val error = state.error!!
+                        EmptyScreen(
+                            message = error.message,
+                            secondaryMessage = error.detail,
+                            actions = listOf(
+                                EmptyScreenAction(
+                                    stringRes = MR.strings.action_retry,
+                                    icon = Icons.Outlined.Refresh,
+                                    onClick = { screenModel.refresh() },
+                                ),
+                            ),
+                        )
                     }
                     else -> {
                         LazyVerticalGrid(

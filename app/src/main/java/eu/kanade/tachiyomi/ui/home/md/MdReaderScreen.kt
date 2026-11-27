@@ -12,13 +12,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -29,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -37,6 +37,9 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.screens.EmptyScreen
+import tachiyomi.presentation.core.screens.EmptyScreenAction
 
 class MdReaderScreen(val chapterId: String, val mangaId: String) : Screen {
 
@@ -89,21 +92,22 @@ class MdReaderScreen(val chapterId: String, val mangaId: String) : Screen {
                         }
                     }
                     state.error != null -> {
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
+                        val error = state.error!!
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colorScheme.background,
                         ) {
-                            Text(
-                                text = state.error!!,
-                                color = MaterialTheme.colorScheme.error,
-                                textAlign = TextAlign.Center,
+                            EmptyScreen(
+                                message = error.message,
+                                secondaryMessage = error.detail,
+                                actions = listOf(
+                                    EmptyScreenAction(
+                                        stringRes = MR.strings.action_retry,
+                                        icon = Icons.Outlined.Refresh,
+                                        onClick = { screenModel.loadChapterPages() },
+                                    ),
+                                ),
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(onClick = { screenModel.loadChapterPages() }) {
-                                Text(text = "إعادة المحاولة")
-                            }
                         }
                     }
                     else -> {

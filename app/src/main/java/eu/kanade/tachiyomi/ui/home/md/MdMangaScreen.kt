@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -37,6 +38,9 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import exh.md.dto.ChapterDataDto
 import exh.md.utils.MdUtil
+import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.screens.EmptyScreen
+import tachiyomi.presentation.core.screens.EmptyScreenAction
 
 class MdMangaScreen(private val mangaId: String) : Screen {
 
@@ -65,6 +69,19 @@ class MdMangaScreen(private val mangaId: String) : Screen {
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                 if (state.isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                } else if (state.error != null && state.manga == null) {
+                    val error = state.error!!
+                    EmptyScreen(
+                        message = error.message,
+                        secondaryMessage = error.detail,
+                        actions = listOf(
+                            EmptyScreenAction(
+                                stringRes = MR.strings.action_retry,
+                                icon = Icons.Outlined.Refresh,
+                                onClick = { screenModel.refresh() },
+                            ),
+                        ),
+                    )
                 } else {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         item {
